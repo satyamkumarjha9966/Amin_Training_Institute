@@ -1,9 +1,10 @@
-'use client'
+"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Phone, Mail } from "lucide-react";
 import instituteLogo from "@/assets/institute-logo.png";
+import Link from "next/link";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,13 +65,13 @@ const Header = () => {
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-8">
               {navItems.map((item) => (
-                <a
+                <Link
                   key={item.name}
                   href={item.href}
                   className="text-foreground hover:text-[#00ACAC] transition-colors font-bold"
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
             </nav>
 
@@ -79,8 +80,12 @@ const Header = () => {
               <Button variant="outline" size="sm">
                 Call Now
               </Button>
-              <Button variant="cta" size="sm" className="bg-[#00ACAC] hover:bg-[#008A8A] hover:text-white">
-                Apply Now
+              <Button
+                variant="cta"
+                size="sm"
+                className="bg-[#00ACAC] hover:bg-[#008A8A] hover:text-white"
+              >
+                <Link href="/enroll">Apply Now</Link>
               </Button>
             </div>
 
@@ -89,7 +94,11 @@ const Header = () => {
               className="lg:hidden p-2"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -99,21 +108,25 @@ const Header = () => {
           <div className="lg:hidden bg-background border-t border-border">
             <nav className="container mx-auto px-4 py-4">
               {navItems.map((item) => (
-                <a
+                <Link
                   key={item.name}
                   href={item.href}
                   className="block py-3 hover:text-[#00ACAC] hover:text-primary transition-colors font-semibold border-b border-border last:border-b-0"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
               <div className="flex gap-3 mt-4">
                 <Button variant="outline" size="sm" className="flex-1">
                   Call Now
                 </Button>
-                <Button variant="cta" size="sm" className="flex-1 bg-[#00ACAC] hover:bg-[#008A8A] hover:text-white">
-                  Apply Now
+                <Button
+                  variant="cta"
+                  size="sm"
+                  className="flex-1 bg-[#00ACAC] hover:bg-[#008A8A] hover:text-white"
+                >
+                  <Link href="/enroll">Apply Now</Link>
                 </Button>
               </div>
             </nav>
