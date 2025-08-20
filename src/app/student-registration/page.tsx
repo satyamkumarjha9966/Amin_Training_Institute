@@ -1,9 +1,16 @@
+"use client";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -23,18 +30,18 @@ const StudentRegistration = () => {
     course: "",
     photo: null as File | null,
     idProof: null as File | null,
-    marksheet: null as File | null
+    marksheet: null as File | null,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registrationId, setRegistrationId] = useState("");
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleFileChange = (field: string, file: File | null) => {
-    setFormData(prev => ({ ...prev, [field]: file }));
+    setFormData((prev) => ({ ...prev, [field]: file }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,7 +53,7 @@ const StudentRegistration = () => {
       const regId = `ATI${Date.now().toString().slice(-6)}`;
       setRegistrationId(regId);
       setIsSubmitting(false);
-      
+
       toast({
         title: "Registration Successful!",
         description: `Your registration ID is ${regId}. Please save it for future reference.`,
@@ -63,21 +70,30 @@ const StudentRegistration = () => {
             <Card className="border-elm/20">
               <CardContent className="pt-12 pb-8">
                 <CheckCircle className="h-16 w-16 text-elm mx-auto mb-6" />
-                <h1 className="text-3xl font-bold text-foreground mb-4">Registration Successful!</h1>
+                <h1 className="text-3xl font-bold text-foreground mb-4">
+                  Registration Successful!
+                </h1>
                 <p className="text-muted-foreground mb-6">
-                  Your application has been submitted successfully. Please save your registration ID for future reference.
+                  Your application has been submitted successfully. Please save
+                  your registration ID for future reference.
                 </p>
                 <div className="bg-elm/10 p-6 rounded-lg mb-6">
-                  <h2 className="text-xl font-semibold mb-2">Registration ID</h2>
-                  <p className="text-2xl font-bold text-elm">{registrationId}</p>
+                  <h2 className="text-xl font-semibold mb-2">
+                    Registration ID
+                  </h2>
+                  <p className="text-2xl font-bold text-elm">
+                    {registrationId}
+                  </p>
                 </div>
                 <div className="space-y-2 text-sm text-muted-foreground mb-6">
                   <p>• You will receive a confirmation email shortly</p>
                   <p>• Use your Registration ID to track application status</p>
-                  <p>• Admission team will contact you within 2-3 working days</p>
+                  <p>
+                    • Admission team will contact you within 2-3 working days
+                  </p>
                 </div>
-                <Button 
-                  onClick={() => window.location.href = "/"} 
+                <Button
+                  onClick={() => (window.location.href = "/")}
                   variant="hero"
                   size="lg"
                 >
@@ -95,7 +111,7 @@ const StudentRegistration = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-elm/10 to-elm/5 py-16">
         <div className="container mx-auto px-4">
@@ -104,7 +120,8 @@ const StudentRegistration = () => {
               Student Registration
             </h1>
             <p className="text-lg text-muted-foreground">
-              Fill out the form below to register for our professional training programs
+              Fill out the form below to register for our professional training
+              programs
             </p>
           </div>
         </div>
@@ -116,7 +133,6 @@ const StudentRegistration = () => {
           <div className="max-w-4xl mx-auto">
             <form onSubmit={handleSubmit}>
               <div className="grid gap-8">
-                
                 {/* Personal Information */}
                 <Card>
                   <CardHeader>
@@ -132,7 +148,9 @@ const StudentRegistration = () => {
                         <Input
                           id="fullName"
                           value={formData.fullName}
-                          onChange={(e) => handleInputChange("fullName", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("fullName", e.target.value)
+                          }
                           placeholder="Enter your full name"
                           required
                         />
@@ -142,7 +160,9 @@ const StudentRegistration = () => {
                         <Input
                           id="fatherName"
                           value={formData.fatherName}
-                          onChange={(e) => handleInputChange("fatherName", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("fatherName", e.target.value)
+                          }
                           placeholder="Enter father's name"
                           required
                         />
@@ -156,13 +176,19 @@ const StudentRegistration = () => {
                           id="dob"
                           type="date"
                           value={formData.dob}
-                          onChange={(e) => handleInputChange("dob", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("dob", e.target.value)
+                          }
                           required
                         />
                       </div>
                       <div>
                         <Label htmlFor="gender">Gender *</Label>
-                        <Select onValueChange={(value) => handleInputChange("gender", value)}>
+                        <Select
+                          onValueChange={(value) =>
+                            handleInputChange("gender", value)
+                          }
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select gender" />
                           </SelectTrigger>
@@ -193,7 +219,9 @@ const StudentRegistration = () => {
                           id="email"
                           type="email"
                           value={formData.email}
-                          onChange={(e) => handleInputChange("email", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("email", e.target.value)
+                          }
                           placeholder="Enter email address"
                           required
                         />
@@ -204,7 +232,9 @@ const StudentRegistration = () => {
                           id="mobile"
                           type="tel"
                           value={formData.mobile}
-                          onChange={(e) => handleInputChange("mobile", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("mobile", e.target.value)
+                          }
                           placeholder="Enter 10-digit mobile number"
                           required
                         />
@@ -216,7 +246,9 @@ const StudentRegistration = () => {
                       <Textarea
                         id="address"
                         value={formData.address}
-                        onChange={(e) => handleInputChange("address", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("address", e.target.value)
+                        }
                         placeholder="Enter complete address with city, state, pincode"
                         rows={3}
                         required
@@ -236,14 +268,24 @@ const StudentRegistration = () => {
                   <CardContent>
                     <div>
                       <Label htmlFor="course">Choose Course *</Label>
-                      <Select onValueChange={(value) => handleInputChange("course", value)}>
+                      <Select
+                        onValueChange={(value) =>
+                          handleInputChange("course", value)
+                        }
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select your course" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="diploma-amin">Diploma in Amin / Surveyor (1 Year)</SelectItem>
-                          <SelectItem value="certificate-amin">Certificate Course in Amin (6 Months)</SelectItem>
-                          <SelectItem value="advanced-diploma">Advanced Diploma in Land Surveyor (18 Months)</SelectItem>
+                          <SelectItem value="diploma-amin">
+                            Diploma in Amin / Surveyor (1 Year)
+                          </SelectItem>
+                          <SelectItem value="certificate-amin">
+                            Certificate Course in Amin (6 Months)
+                          </SelectItem>
+                          <SelectItem value="advanced-diploma">
+                            Advanced Diploma in Land Surveyor (18 Months)
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -266,34 +308,55 @@ const StudentRegistration = () => {
                           id="photo"
                           type="file"
                           accept="image/*"
-                          onChange={(e) => handleFileChange("photo", e.target.files?.[0] || null)}
+                          onChange={(e) =>
+                            handleFileChange(
+                              "photo",
+                              e.target.files?.[0] || null
+                            )
+                          }
                           required
                         />
-                        <p className="text-xs text-muted-foreground mt-1">Max size: 2MB, JPG/PNG</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Max size: 2MB, JPG/PNG
+                        </p>
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="idProof">ID Proof *</Label>
                         <Input
                           id="idProof"
                           type="file"
                           accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => handleFileChange("idProof", e.target.files?.[0] || null)}
+                          onChange={(e) =>
+                            handleFileChange(
+                              "idProof",
+                              e.target.files?.[0] || null
+                            )
+                          }
                           required
                         />
-                        <p className="text-xs text-muted-foreground mt-1">Aadhar/Voter ID/DL</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Aadhar/Voter ID/DL
+                        </p>
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="marksheet">Last Marksheet *</Label>
                         <Input
                           id="marksheet"
                           type="file"
                           accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => handleFileChange("marksheet", e.target.files?.[0] || null)}
+                          onChange={(e) =>
+                            handleFileChange(
+                              "marksheet",
+                              e.target.files?.[0] || null
+                            )
+                          }
                           required
                         />
-                        <p className="text-xs text-muted-foreground mt-1">10th/12th Marksheet</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          10th/12th Marksheet
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -303,9 +366,9 @@ const StudentRegistration = () => {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="text-center space-y-4">
-                      <Button 
-                        type="submit" 
-                        size="lg" 
+                      <Button
+                        type="submit"
+                        size="lg"
                         variant="hero"
                         disabled={isSubmitting}
                         className="w-full md:w-auto px-12"
@@ -313,13 +376,13 @@ const StudentRegistration = () => {
                         {isSubmitting ? "Submitting..." : "Submit Registration"}
                       </Button>
                       <p className="text-sm text-muted-foreground">
-                        By submitting this form, you agree to our terms and conditions.
-                        Our admission team will contact you within 2-3 working days.
+                        By submitting this form, you agree to our terms and
+                        conditions. Our admission team will contact you within
+                        2-3 working days.
                       </p>
                     </div>
                   </CardContent>
                 </Card>
-
               </div>
             </form>
           </div>
