@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Amin Training Institute Design System
+Professional, modern theme with Elm (teal), Cod Gray, Bombay, and White
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Base colors */
+    --background: 0 0% 100%;
+    --foreground: 200 7% 8.4%;
+
+    /* Institute brand colors */
+    --elm: 180 100% 25.1%;          /* Deep teal/cyan #008080 */
+    --elm-light: 180 100% 35%;      /* Lighter teal for hover states */
+    --elm-foreground: 0 0% 100%;    /* White text on elm */
+    
+    --cod-gray: 200 7% 8.4%;        /* Very dark gray #1a1a1a */
+    --cod-gray-foreground: 0 0% 100%;
+    
+    --bombay: 200 8% 55%;           /* Light-medium gray #8a8a8a */
+    --bombay-light: 200 8% 75%;     /* Lighter bombay for backgrounds */
+    --bombay-foreground: 200 7% 8.4%;
+
+    /* Semantic colors */
+    --primary: 180 100% 25.1%;      /* Elm teal */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 180 100% 20%;
+
+    --secondary: 200 8% 95%;        /* Very light gray */
+    --secondary-foreground: 200 7% 8.4%;
+
+    --accent: 180 100% 35%;         /* Light elm */
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 200 8% 96%;
+    --muted-foreground: 200 8% 55%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 200 7% 8.4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 7% 8.4%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 8% 90%;
+    --input: 200 8% 95%;
+    --ring: 180 100% 25.1%;
+
+    --radius: 0.75rem;
+
+    /* Custom gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--elm)), hsl(var(--elm-light)));
+    --gradient-card: linear-gradient(180deg, hsl(var(--background)), hsl(var(--secondary)));
+    
+    /* Shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--elm) / 0.2);
+    --shadow-card: 0 4px 20px -5px hsl(var(--cod-gray) / 0.1);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
