@@ -11,6 +11,7 @@ import {
   ExternalLink 
 } from "lucide-react";
 import instituteLogo from "@/assets/institute-logo.png";
+import Link from "next/link";
 
 const Footer = () => {
   const quickLinks = [
@@ -80,13 +81,13 @@ const Footer = () => {
             <ul className="space-y-3">
               {quickLinks.map((link, index) => (
                 <li key={index}>
-                  <a 
+                  <Link 
                     href={link.href}
                     className="text-gray-300 hover:text-[#008080] transition-colors flex items-center gap-2"
                   >
                     <ExternalLink className="w-3 h-3" />
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -98,12 +99,12 @@ const Footer = () => {
             <ul className="space-y-3">
               {courses.map((course, index) => (
                 <li key={index}>
-                  <a 
+                  <Link 
                     href={course.href}
                     className="text-gray-300 hover:text-[#008080] transition-colors text-sm leading-relaxed"
                   >
                     {course.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
