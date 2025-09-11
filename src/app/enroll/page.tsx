@@ -278,28 +278,86 @@ const Enroll = () => {
     }
   };
 
+  // ...imports unchanged
+// add this helper (serialize + files)
+function buildFormData(data: EnrollmentFormData, files: Record<string, File | null>) {
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => {
+      // z.boolean() come as booleans; send strings to keep things simple
+      fd.append(k, typeof v === "boolean" ? String(v) : String(v ?? ""));
+    });
+
+    // append files if present
+    Object.entries(files).forEach(([k, f]) => {
+      if (f) fd.append(k, f, f.name);
+    });
+
+    return fd;
+  }
+
+  // in your component Enroll:
   const onSubmit = async (data: EnrollmentFormData) => {
     try {
-      // Here you would typically send the data to your backend
-      console.log("Form data:", data);
-      console.log("Uploaded files:", uploadedFiles);
+      const fd = buildFormData(data, uploadedFiles);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await fetch("/api/enroll", {
+        method: "POST",
+        body: fd, // multipart/form-data automatically set by the browser
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || "Failed to submit application");
+      }
 
       setShowSuccessModal(true);
       toast({
         title: "Application Submitted Successfully!",
         description: "We will contact you shortly with further details.",
       });
-    } catch (error) {
+      alert("Aapplied successfully!!")
+
+      // optionally reset
+      form.reset();
+      setUploadedFiles({
+        aadhaarCard: null,
+        photograph: null,
+        signature: null,
+        marksheet: null,
+        paymentReceipt: null,
+      });
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to submit application. Please try again.",
+        description: error?.message || "Failed to submit application. Please try again.",
         variant: "destructive",
       });
+      alert("Error in applying!!")
     }
   };
+
+  // const onSubmit = async (data: EnrollmentFormData) => {
+  //   try {
+  //     // Here you would typically send the data to your backend
+  //     console.log("Form data:", data);
+  //     console.log("Uploaded files:", uploadedFiles);
+
+  //     // Simulate API call
+  //     await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  //     setShowSuccessModal(true);
+  //     toast({
+  //       title: "Application Submitted Successfully!",
+  //       description: "We will contact you shortly with further details.",
+  //     });
+  //   } catch (error) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to submit application. Please try again.",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
 
   const handleWhatsAppShare = () => {
     const message =
@@ -1312,7 +1370,7 @@ const Enroll = () => {
           </DialogHeader>
 
           <div className="space-y-3 mt-6">
-            <Button
+            {/* <Button
               onClick={handleDownloadPDF}
               className="w-full flex items-center justify-center gap-2"
               variant="outline"
@@ -1327,7 +1385,7 @@ const Enroll = () => {
             >
               <Share2 className="w-4 h-4" />
               Share on WhatsApp
-            </Button>
+            </Button> */}
 
             <Button
               onClick={() => (window.location.href = "/")}

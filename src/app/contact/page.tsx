@@ -17,16 +17,67 @@ import {
   Navigation
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useState, ChangeEvent, FormEvent } from "react";
+
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  course?: string;
+  location?: string;
+}
 
 const Contact = () => {
   const { toast } = useToast();
+  const [formData, setFormData] = useState<FormData>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
+    course: "",
+    location: "",
+  });
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast({
-      title: "Message Sent Successfully!",
-      description: "Thank you for your inquiry. We will get back to you within 24 hours.",
-    });
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("✅ Message sent successfully!");
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          subject: "",
+          message: "",
+          course: "",
+          location: "",
+        });
+      } else {
+        alert("❌ " + data.error);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong!");
+    }
   };
 
   const contactInfo = [
@@ -199,28 +250,28 @@ const Contact = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="firstName">First Name *</Label>
-                        <Input id="firstName" placeholder="Enter first name" className="border-gray-200" required />
+                        <Input id="firstName" placeholder="Enter first name" className="border-gray-200" required value={formData.firstName} onChange={handleChange} />
                       </div>
                       <div>
                         <Label htmlFor="lastName">Last Name *</Label>
-                        <Input id="lastName" placeholder="Enter last name" className="border-gray-200" required />
+                        <Input id="lastName" placeholder="Enter last name" className="border-gray-200" required value={formData.lastName} onChange={handleChange} />
                       </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="email">Email Address *</Label>
-                        <Input id="email" type="email" placeholder="Enter email address" className="border-gray-200" required />
+                        <Input id="email" type="email" placeholder="Enter email address" className="border-gray-200" required value={formData.email} onChange={handleChange} />
                       </div>
                       <div>
                         <Label htmlFor="phone">Phone Number *</Label>
-                        <Input id="phone" type="tel" placeholder="Enter phone number" className="border-gray-200" required />
+                        <Input id="phone" type="tel" placeholder="Enter phone number" className="border-gray-200" required value={formData.phone} onChange={handleChange} />
                       </div>
                     </div>
 
                     <div>
                       <Label htmlFor="subject">Subject *</Label>
-                      <Input id="subject" placeholder="What is this regarding?" className="border-gray-200" required />
+                      <Input id="subject" placeholder="What is this regarding?" className="border-gray-200" required value={formData.subject} onChange={handleChange} />
                     </div>
 
                     <div>
@@ -230,18 +281,20 @@ const Contact = () => {
                         placeholder="Write your message here..."
                         className="border-gray-200"
                         rows={4}
-                        required
+                        required 
+                        value={formData.message}
+                        onChange={handleChange}
                       />
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="course">Interested Course</Label>
-                        <Input id="course" placeholder="e.g., Diploma in Amin" className="border-gray-200" />
+                        <Input id="course" placeholder="e.g., Diploma in Amin" className="border-gray-200" value={formData.course} onChange={handleChange} />
                       </div>
                       <div>
                         <Label htmlFor="location">Your Location</Label>
-                        <Input id="location" placeholder="City, State" className="border-gray-200" />
+                        <Input id="location" placeholder="City, State" className="border-gray-200" value={formData.location} onChange={handleChange} />
                       </div>
                     </div>
 

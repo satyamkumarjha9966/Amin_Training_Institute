@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Contact from "../../../../models/contactModel";
 
 export async function GET() {
@@ -6,10 +6,21 @@ export async function GET() {
     return NextResponse.json({success: true, data: contact})
 }
 
-export async function POST() {
-    const { name } = NextRequest;
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
 
-    const contact = await Contact.create({name});
+    const newContact = await Contact.create(body);
 
-    return NextResponse.json({success: true, contact})
+    return NextResponse.json(
+      { success: true, data: newContact },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to submit form" },
+      { status: 500 }
+    );
+  }
 }
