@@ -1,27 +1,57 @@
+// app/api/enrollments/route.ts
 import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { v2 as cloudinary } from "cloudinary";
-import { Readable } from "stream";
+import { randomUUID } from "crypto";
 
-// ⬇️ Your own imports (paths as you had them)
+// ⬇️ Your own imports
 import { Enrollment } from "../../../../models/Enrollment"; // Mongoose model
 import { enrollmentSchema } from "@/lib/validators/enrollment"; // Zod schema
 
-// ---- Cloudinary config ----
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
-  api_key: process.env.CLOUDINARY_API_KEY!,
-  api_secret: process.env.CLOUDINARY_API_SECRET!,
+// ---- S3 (AWS SDK v3) ----
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+
+const S3_REGION = process.env.S3_REGION!;
+const S3_BUCKET = process.env.S3_BUCKET!;
+// const S3_PUBLIC_BASE_URL = process.env.S3_PUBLIC_BASE_URL; // optional CDN/domain
+
+const s3 = new S3Client({
+  region: S3_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
 });
 
-const CLOUD_FOLDER = process.env.CLOUDINARY_FOLDER || "enrollments";
+// ---- Upload constraints (kept same as your Cloudinary version) ----
+const BASE_FOLDER = process.env.CLOUDINARY_FOLDER || "enrollments"; // just reusing the name
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "application/pdf"]);
 
-// Upload a web File from formData to Cloudinary via Node stream (no streamifier)
-async function uploadToCloudinary(
+// Build a public URL if your bucket is public or fronted by CloudFront
+function buildPublicUrl(key: string) {
+  // if (S3_PUBLIC_BASE_URL) {
+  //   return `${S3_PUBLIC_BASE_URL.replace(/\/+$/, "")}/${key}`;
+  // }
+  return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
+}
+
+function pickExtByMime(mime: string) {
+  switch (mime) {
+    case "image/jpeg":
+      return "jpg";
+    case "image/png":
+      return "png";
+    case "application/pdf":
+      return "pdf";
+    default:
+      return "bin";
+  }
+}
+
+// Upload a File (from formData) to S3
+async function uploadToS3(
   file: File | null,
   folder: string,
   publicIdPrefix: string
@@ -37,31 +67,34 @@ async function uploadToCloudinary(
     );
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
 
-  return new Promise<{ url: string; public_id: string; bytes: number; format?: string }>(
-    (resolve, reject) => {
-      const upload = cloudinary.uploader.upload_stream(
-        {
-          folder,
-          public_id: `${publicIdPrefix}-${Date.now()}`,
-          resource_type: "auto", // image/pdf/etc
-          overwrite: false,
-        },
-        (error, result) => {
-          if (error || !result)
-            return reject(error || new Error("Cloudinary upload failed"));
-          resolve({
-            url: result.secure_url,
-            public_id: result.public_id,
-            bytes: result.bytes,
-            format: result.format,
-          });
-        }
-      );
-      Readable.from(buffer).pipe(upload);
-    }
-  );
+  const safePrefix = String(publicIdPrefix || "candidate").replace(/\s+/g, "_");
+  const ext = pickExtByMime(file.type);
+
+  // Key example: enrollments/photo/John_Doe-<ts>-<uuid>.jpg
+  const key = `${folder.replace(/\/+$/, "")}/${safePrefix}-${Date.now()}-${randomUUID()}.${ext}`;
+
+  const put = new PutObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: key,
+    Body: buffer,
+    ContentType: file.type,
+    // If bucket uses ACLs and must be public, uncomment next line:
+    // ACL: "public-read",
+  });
+
+  const result = await s3.send(put);
+
+  return {
+    url: buildPublicUrl(key), // Will work only if public/CF in front
+    key,
+    bucket: S3_BUCKET,
+    etag: result.ETag,
+    bytes: buffer.byteLength,
+    mimeType: file.type,
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -74,9 +107,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Next 15: formData() works on Node runtime
     const fd = await req.formData();
 
-    // 1) Extract scalar fields (MUST match your frontend keys)
+    // 1) Scalars (must match your frontend field names)
     const scalarKeys = [
       "fullName","dateOfBirth","gender","mobileNumber","email","parentName",
       "permanentAddress","city","state","pinCode","aadhaarNumber","panNumber",
@@ -88,10 +122,10 @@ export async function POST(req: NextRequest) {
     const raw: Record<string, any> = {};
     scalarKeys.forEach((k) => (raw[k] = fd.get(k)));
 
-    // 2) Validate with your existing Zod schema (which should coerce booleans)
+    // 2) Validate with Zod (your schema should coerce booleans etc.)
     const parsed = enrollmentSchema.parse(raw);
 
-    // 3) Extract files (names must match your input ids in the form)
+    // 3) Files (names must match your <input name="...">)
     const files = {
       aadhaarCard: fd.get("aadhaarCard") as File | null,
       photograph: fd.get("photograph") as File | null,
@@ -100,19 +134,19 @@ export async function POST(req: NextRequest) {
       paymentReceipt: fd.get("paymentReceipt") as File | null,
     };
 
-    // 5) Upload to Cloudinary in parallel (images + pdf supported)
+    // 4) Upload all in parallel
     const safeName = String(parsed.fullName || "candidate").replace(/\s+/g, "_");
 
     const [aadhaarRes, photoRes, signRes, marksheetRes, receiptRes] =
       await Promise.all([
-        uploadToCloudinary(files.aadhaarCard, `${CLOUD_FOLDER}/aadhaar`, safeName),
-        uploadToCloudinary(files.photograph, `${CLOUD_FOLDER}/photo`, safeName),
-        uploadToCloudinary(files.signature, `${CLOUD_FOLDER}/signature`, safeName),
-        uploadToCloudinary(files.marksheet, `${CLOUD_FOLDER}/marksheet`, safeName),
-        uploadToCloudinary(files.paymentReceipt, `${CLOUD_FOLDER}/payment`, safeName),
+        uploadToS3(files.aadhaarCard, `${BASE_FOLDER}/aadhaar`, safeName),
+        uploadToS3(files.photograph, `${BASE_FOLDER}/photo`, safeName),
+        uploadToS3(files.signature, `${BASE_FOLDER}/signature`, safeName),
+        uploadToS3(files.marksheet, `${BASE_FOLDER}/marksheet`, safeName),
+        uploadToS3(files.paymentReceipt, `${BASE_FOLDER}/payment`, safeName),
       ]);
 
-    // 6) Persist
+    // 5) Persist to Mongo
     const doc = await Enrollment.create({
       ...parsed,
       files: {
@@ -133,6 +167,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (err: any) {
+    // Zod error shape
     if (err?.issues?.length) {
       return NextResponse.json(
         { message: err.issues[0].message, issues: err.issues },

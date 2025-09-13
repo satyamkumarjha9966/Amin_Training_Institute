@@ -9,9 +9,9 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
+console.log(body);
     const newContact = await Contact.create(body);
-
+console.log("da", newContact);
     return NextResponse.json(
       { success: true, data: newContact },
       { status: 201 }
