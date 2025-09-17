@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     // Check DB connection
     if (mongoose.connection.readyState !== 1) {
       return NextResponse.json(
-        { error: "Database not connected", details: `Mongoose readyState: ${mongoose.connection.readyState}` },
+        { error: "Database not connected", dbURL: process.env.MONGO_URI, details: `Mongoose readyState: ${mongoose.connection.readyState}` },
         { status: 500 }
       );
     }
