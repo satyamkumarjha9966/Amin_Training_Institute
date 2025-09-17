@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { connectDB } from "@/lib/db";
+import { connectDB } from "@/app/api/db";
 
 import { Playfair_Display, Inter } from "next/font/google";
 
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"] });
-const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600"] });
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,13 +34,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  await connectDB()
-  
+  await connectDB();
+
   return (
     <html lang="en">
-      <body
-        className={`${playfair.className} ${inter.className}`}
-      >
+      <body className={`${playfair.className} ${inter.className}`}>
         {children}
       </body>
     </html>
