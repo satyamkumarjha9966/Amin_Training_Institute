@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/ui/page-header';
-import { FilterBar } from '@/components/ui/filter-bar';
-import { KPICard } from '@/components/admin/KPICard';
-import { DashboardCharts } from '@/components/admin/DashboardCharts';
-import { WorkQueue } from '@/components/admin/WorkQueue';
-import { ActivityTimeline } from '@/components/admin/ActivityTimeline';
+import { useState } from "react";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { KPICard } from "@/components/admin/KPICard";
+import { DashboardCharts } from "@/components/admin/DashboardCharts";
+import { WorkQueue } from "@/components/admin/WorkQueue";
+import { ActivityTimeline } from "@/components/admin/ActivityTimeline";
 import {
   Mail,
   GraduationCap,
@@ -23,16 +23,18 @@ import {
   RefreshCw,
   Calendar,
   Filter,
-} from 'lucide-react';
+} from "lucide-react";
 
 // If your routes already include /admin in child components (as we did),
 // keep this ''. If not, set to '/admin' here and remove duplicates below.
 // To be consistent with prior components, we’ll prefix here:
-const ADMIN_PREFIX = '/admin';
+const ADMIN_PREFIX = "/admin";
 
 export default function AdminDashboard() {
-  const [searchValue, setSearchValue] = useState('');
-  const [filters, setFilters] = useState<Array<{ id: string; label: string; value: string }>>([]);
+  const [searchValue, setSearchValue] = useState("");
+  const [filters, setFilters] = useState<
+    Array<{ id: string; label: string; value: string }>
+  >([]);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   // Mock data with enhanced metrics
@@ -56,19 +58,55 @@ export default function AdminDashboard() {
 
   const handleExport = () => {
     // TODO: export dashboard data
-    console.log('Exporting dashboard data...');
+    console.log("Exporting dashboard data...");
   };
 
   const recentSubmissions = [
-    { id: '1', name: 'Rajesh Kumar', subject: 'Course Inquiry', status: 'new', time: '2 hours ago' },
-    { id: '2', name: 'Priya Sharma', subject: 'Admission Requirements', status: 'in-review', time: '4 hours ago' },
-    { id: '3', name: 'Amit Singh', subject: 'Fee Structure', status: 'responded', time: '1 day ago' },
+    {
+      id: "1",
+      name: "Rajesh Kumar",
+      subject: "Course Inquiry",
+      status: "new",
+      time: "2 hours ago",
+    },
+    {
+      id: "2",
+      name: "Priya Sharma",
+      subject: "Admission Requirements",
+      status: "in-review",
+      time: "4 hours ago",
+    },
+    {
+      id: "3",
+      name: "Amit Singh",
+      subject: "Fee Structure",
+      status: "responded",
+      time: "1 day ago",
+    },
   ];
 
   const recentEnrollments = [
-    { id: '1', name: 'Sunita Patel', course: 'Diploma in Amin', status: 'pending', time: '1 hour ago' },
-    { id: '2', name: 'Ravi Kumar', course: 'Surveyor Training', status: 'approved', time: '3 hours ago' },
-    { id: '3', name: 'Meera Shah', course: 'GST Practitioner', status: 'enrolled', time: '6 hours ago' },
+    {
+      id: "1",
+      name: "Sunita Patel",
+      course: "Diploma in Amin",
+      status: "pending",
+      time: "1 hour ago",
+    },
+    {
+      id: "2",
+      name: "Ravi Kumar",
+      course: "Surveyor Training",
+      status: "approved",
+      time: "3 hours ago",
+    },
+    {
+      id: "3",
+      name: "Meera Shah",
+      course: "GST Practitioner",
+      status: "enrolled",
+      time: "6 hours ago",
+    },
   ];
 
   return (
@@ -128,25 +166,25 @@ export default function AdminDashboard() {
           title="Contact Submissions"
           value={stats.totalSubmissions}
           icon={<Mail className="h-4 w-4" />}
-          trend={{ value: 12.5, label: 'vs last month', direction: 'up' }}
+          trend={{ value: 12.5, label: "vs last month", direction: "up" }}
           subtitle={`${stats.newSubmissions} new this week`}
-          href={`${ADMIN_PREFIX}/contact-submissions`}
+          href={`${ADMIN_PREFIX}/contact-submissions-list`}
         />
 
         <KPICard
           title="Course Enrollments"
           value={stats.totalEnrollments}
           icon={<GraduationCap className="h-4 w-4" />}
-          trend={{ value: 8.3, label: 'vs last month', direction: 'up' }}
+          trend={{ value: 8.3, label: "vs last month", direction: "up" }}
           subtitle={`${stats.pendingEnrollments} pending review`}
-          href={`${ADMIN_PREFIX}/enrollments`}
+          href={`${ADMIN_PREFIX}/course-enrollments-list`}
         />
 
         <KPICard
           title="Conversion Rate"
           value={`${stats.conversionRate}%`}
           icon={<TrendingUp className="h-4 w-4" />}
-          trend={{ value: 2.1, label: 'vs last month', direction: 'up' }}
+          trend={{ value: 2.1, label: "vs last month", direction: "up" }}
           subtitle="submissions to enrollments"
         />
 
@@ -154,7 +192,7 @@ export default function AdminDashboard() {
           title="Pending Actions"
           value={stats.pendingEnrollments + 8}
           icon={<AlertCircle className="h-4 w-4" />}
-          trend={{ value: -15.2, label: 'vs last week', direction: 'down' }}
+          trend={{ value: -15.2, label: "vs last week", direction: "down" }}
           subtitle="require attention"
         />
 
@@ -162,7 +200,7 @@ export default function AdminDashboard() {
           title="Avg Response Time"
           value={`${stats.avgResponseTime}h`}
           icon={<Clock className="h-4 w-4" />}
-          trend={{ value: -8.5, label: 'vs last month', direction: 'down' }}
+          trend={{ value: -8.5, label: "vs last month", direction: "down" }}
           subtitle="to submissions"
         />
 
@@ -170,7 +208,7 @@ export default function AdminDashboard() {
           title="Active Students"
           value={stats.activeStudents}
           icon={<Users className="h-4 w-4" />}
-          trend={{ value: 18.7, label: 'vs last month', direction: 'up' }}
+          trend={{ value: 18.7, label: "vs last month", direction: "up" }}
           subtitle="currently enrolled"
         />
       </div>
@@ -191,32 +229,40 @@ export default function AdminDashboard() {
         {/* Recent Contact Submissions */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Recent Contact Submissions</CardTitle>
+            <CardTitle className="text-lg">
+              Recent Contact Submissions
+            </CardTitle>
             <Button variant="outline" size="sm" asChild>
-              <Link href={`${ADMIN_PREFIX}/contact-submissions`}>View All</Link>
+              <Link href={`${ADMIN_PREFIX}/contact-submissions-list`}>
+                View All
+              </Link>
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {recentSubmissions.map((submission) => (
               <Link
                 key={submission.id}
-                href={`${ADMIN_PREFIX}/contact-submissions/${submission.id}`}
+                href={`${ADMIN_PREFIX}/contact-submission-detail/${submission.id}`}
                 className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors block"
               >
                 <div className="space-y-1">
                   <p className="text-sm font-medium">{submission.name}</p>
-                  <p className="text-xs text-muted-foreground">{submission.subject}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {submission.subject}
+                  </p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Badge
-                    variant={submission.status === 'new' ? 'outline' : 'secondary'}
+                    variant={
+                      submission.status === "new" ? "outline" : "secondary"
+                    }
                     className="text-xs capitalize"
                   >
-                    {submission.status === 'new'
-                      ? 'New'
-                      : submission.status === 'in-review'
-                      ? 'In Review'
-                      : 'Responded'}
+                    {submission.status === "new"
+                      ? "New"
+                      : submission.status === "in-review"
+                      ? "In Review"
+                      : "Responded"}
                   </Badge>
                   <div className="flex items-center text-xs text-muted-foreground">
                     <Clock className="h-3 w-3 mr-1" />
@@ -233,36 +279,43 @@ export default function AdminDashboard() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg">Recent Enrollments</CardTitle>
             <Button variant="outline" size="sm" asChild>
-              <Link href={`${ADMIN_PREFIX}/enrollments`}>View All</Link>
+              <Link href={`${ADMIN_PREFIX}/course-enrollments-list`}>
+                View All
+              </Link>
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {recentEnrollments.map((enrollment) => (
               <Link
                 key={enrollment.id}
-                href={`${ADMIN_PREFIX}/enrollments/${enrollment.id}`}
+                href={`${ADMIN_PREFIX}/course-enrollment-detail/${enrollment.id}`}
                 className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors block"
               >
                 <div className="space-y-1">
                   <p className="text-sm font-medium">{enrollment.name}</p>
-                  <p className="text-xs text-muted-foreground">{enrollment.course}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {enrollment.course}
+                  </p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center space-x-1">
-                    {enrollment.status === 'pending' && (
+                    {enrollment.status === "pending" && (
                       <AlertCircle className="h-3 w-3 text-orange-500" />
                     )}
-                    {enrollment.status === 'approved' && (
+                    {enrollment.status === "approved" && (
                       <CheckCircle className="h-3 w-3 text-green-500" />
                     )}
-                    {enrollment.status === 'enrolled' && (
+                    {enrollment.status === "enrolled" && (
                       <CheckCircle className="h-3 w-3 text-blue-500" />
                     )}
                     <Badge
-                      variant={enrollment.status === 'pending' ? 'outline' : 'default'}
+                      variant={
+                        enrollment.status === "pending" ? "outline" : "default"
+                      }
                       className="text-xs capitalize"
                     >
-                      {enrollment.status.charAt(0).toUpperCase() + enrollment.status.slice(1)}
+                      {enrollment.status.charAt(0).toUpperCase() +
+                        enrollment.status.slice(1)}
                     </Badge>
                   </div>
                   <div className="flex items-center text-xs text-muted-foreground">
@@ -283,14 +336,22 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex flex-col space-y-2" asChild>
-              <Link href={`${ADMIN_PREFIX}/contact-submissions`}>
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col space-y-2"
+              asChild
+            >
+              <Link href={`${ADMIN_PREFIX}/contact-submissions-list`}>
                 <Mail className="h-6 w-6" />
                 <span className="text-sm">Review Submissions</span>
               </Link>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2" asChild>
-              <Link href={`${ADMIN_PREFIX}/enrollments`}>
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col space-y-2"
+              asChild
+            >
+              <Link href={`${ADMIN_PREFIX}/course-enrollments-list`}>
                 <GraduationCap className="h-6 w-6" />
                 <span className="text-sm">Manage Enrollments</span>
               </Link>
