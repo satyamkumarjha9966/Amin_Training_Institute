@@ -11,6 +11,7 @@ import { enrollmentSchema } from "@/lib/validators/enrollment"; // Zod schema
 
 // ---- S3 (AWS SDK v3) ----
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { connectDB } from "@/lib/db";
 
 const S3_REGION = process.env.S3_REGION!;
 const S3_BUCKET = process.env.S3_BUCKET!;
@@ -99,6 +100,7 @@ async function uploadToS3(
 
 export async function POST(req: NextRequest) {
   try {
+    await connectDB();
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(

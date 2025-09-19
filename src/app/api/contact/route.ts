@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 
 export async function GET() {
+    await connectDB();
     const contact = await Contact.find({});
     return NextResponse.json({success: true, data: contact})
 }
@@ -12,13 +13,6 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await connectDB();
-    // Check DB connection
-    if (mongoose.connection.readyState !== 1) {
-      return NextResponse.json(
-        { error: "Database not connected", dbURL: process.env.MONGO_URI, details: `Mongoose readyState: ${mongoose.connection.readyState}` },
-        { status: 500 }
-      );
-    }
     const body = await req.json();
     try {
       const newContact = await Contact.create(body);
