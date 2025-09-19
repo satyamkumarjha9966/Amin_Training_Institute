@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://biharamanat.com/
+Host: https://biharamanat.com
 
 # Sitemaps
 Sitemap: https://biharamanat.com/sitemap.xml

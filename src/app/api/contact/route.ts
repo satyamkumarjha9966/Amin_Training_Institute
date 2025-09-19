@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import Contact from "../../../../models/contactModel";
 import mongoose from "mongoose";
+import { connectDB } from "@/lib/db";
 
 export async function GET() {
     const contact = await Contact.find({});
@@ -10,6 +11,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    await connectDB();
     // Check DB connection
     if (mongoose.connection.readyState !== 1) {
       return NextResponse.json(

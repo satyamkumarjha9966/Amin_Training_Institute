@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { connectDB } from "@/app/api/db";
+import { connectDB } from "@/lib/db";
 
 import { Playfair_Display, Inter } from "next/font/google";
 
