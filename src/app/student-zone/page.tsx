@@ -100,19 +100,19 @@ const StudentZone = () => {
             <Tabs defaultValue="admission" className="w-full">
               <TabsList className="grid w-full bg-[#F4F5F6] grid-cols-4">
                 <TabsTrigger value="admission" className="flex items-center gap-2 cursor-pointer">
-                  <BookOpen className="h-4 w-4" />
+                  <BookOpen className="h-2 w-2 md:h-4 md:w-4 lg:h-4 lg:w-4 xl:h-4 xl:w-4" />
                   Admission Info
                 </TabsTrigger>
                 <TabsTrigger value="admit-card" className="flex items-center gap-2 cursor-pointer">
-                  <FileText className="h-4 w-4" />
+                  <FileText className="h-2 w-2 md:h-4 md:w-4 lg:h-4 lg:w-4 xl:h-4 xl:w-4" />
                   Admit Card
                 </TabsTrigger>
                 <TabsTrigger value="result" className="flex items-center gap-2 cursor-pointer">
-                  <GraduationCap className="h-4 w-4" />
+                  <GraduationCap className="h-2 w-2 md:h-4 md:w-4 lg:h-4 lg:w-4 xl:h-4 xl:w-4" />
                   Result
                 </TabsTrigger>
                 <TabsTrigger value="certificate" className="flex items-center gap-2 cursor-pointer">
-                  <Award className="h-4 w-4" />
+                  <Award className="h-2 w-2 md:h-4 md:w-4 lg:h-4 lg:w-4 xl:h-4 xl:w-4" />
                   Certificate
                 </TabsTrigger>
               </TabsList>
