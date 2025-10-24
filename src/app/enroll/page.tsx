@@ -279,8 +279,11 @@ const Enroll = () => {
   };
 
   // ...imports unchanged
-// add this helper (serialize + files)
-function buildFormData(data: EnrollmentFormData, files: Record<string, File | null>) {
+  // add this helper (serialize + files)
+  function buildFormData(
+    data: EnrollmentFormData,
+    files: Record<string, File | null>
+  ) {
     const fd = new FormData();
     Object.entries(data).forEach(([k, v]) => {
       // z.boolean() come as booleans; send strings to keep things simple
@@ -315,7 +318,7 @@ function buildFormData(data: EnrollmentFormData, files: Record<string, File | nu
         title: "Application Submitted Successfully!",
         description: "We will contact you shortly with further details.",
       });
-      alert("Aapplied successfully!!")
+      alert("Aapplied successfully!!");
 
       // optionally reset
       form.reset();
@@ -329,10 +332,11 @@ function buildFormData(data: EnrollmentFormData, files: Record<string, File | nu
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error?.message || "Failed to submit application. Please try again.",
+        description:
+          error?.message || "Failed to submit application. Please try again.",
         variant: "destructive",
       });
-      alert("Error in applying!!")
+      alert("Error in applying!!");
     }
   };
 
@@ -1205,8 +1209,8 @@ function buildFormData(data: EnrollmentFormData, files: Record<string, File | nu
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground py-12">
-        <div className="container mx-auto px-4">
+      <div className="bg-gradient-to-r from-primary to-primary text-primary-glow py-12">
+        <div className="container mx-auto px-4 text-white">
           <h1 className="text-4xl font-bold text-center mb-4">
             Enroll in Government Certified Courses
           </h1>
@@ -1245,7 +1249,7 @@ function buildFormData(data: EnrollmentFormData, files: Record<string, File | nu
         <div className="max-w-4xl mx-auto">
           {/* Progress Steps */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-center mb-4">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
                   <div
@@ -1267,7 +1271,7 @@ function buildFormData(data: EnrollmentFormData, files: Record<string, File | nu
                   {index < steps.length - 1 && (
                     <div
                       className={`
-                      w-12 md:w-20 h-0.5 transition-all duration-300
+                      w-5 md:w-20 h-0.5 transition-all duration-300
                       ${
                         currentStep > step.id
                           ? "bg-[#B99671]"
