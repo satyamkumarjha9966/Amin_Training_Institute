@@ -25,7 +25,7 @@ const Header = () => {
       {/* Top Bar */}
       <div className="bg-[#141617] text-white py-2 px-4">
         <div className="container mx-auto flex justify-between items-center text-sm">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 header-left-section">
             <span className="flex items-center gap-2">
               <Phone className="w-4 h-4" />
               +91 98765 43210
