@@ -74,12 +74,12 @@ export default function ContactSubmissionDetail() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" onClick={() => router.push("/contact-submissions")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-2 mr-2" />
             Back to List
           </Button>
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-semibold">Contact Submission</h1>
+              <h1 className="sm:text-sm xl:text-2xl font-semibold">Contact Submission</h1>
               <StatusBadge status={status} />
             </div>
             <p className="text-sm text-muted-foreground">

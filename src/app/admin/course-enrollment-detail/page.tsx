@@ -123,7 +123,7 @@ export default function CourseEnrollmentDetail() {
           </Button>
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-semibold">Course Enrollment</h1>
+              <h1 className="sm:text-sm xl:text-2xl font-semibold">Course Enrollment</h1>
               <StatusBadge status={status} />
               <StatusBadge status={mockEnrollment.paymentStatus} />
             </div>
