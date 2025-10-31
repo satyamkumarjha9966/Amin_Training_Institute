@@ -63,6 +63,25 @@ type Declaration = {
   confirmContactConsent: boolean;
 };
 
+// Module-scope stable helpers to avoid remounts when ApplicationForm re-renders
+const SectionWrapper: React.FC<
+  React.PropsWithChildren<{ title: string; subtitle?: string }>
+> = ({ title, subtitle, children }) => (
+  <section className="mb-10">
+    <div className="mb-4">
+      <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+      {subtitle && (
+        <p className="text-xs text-gray-500 leading-relaxed">{subtitle}</p>
+      )}
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 gap-4">
+      {children}
+    </div>
+  </section>
+);
+
+const Required: React.FC = () => <span className="text-red-500">*</span>;
+
 const ApplicationForm: React.FC = () => {
   // -----------------------
   // STEP CONTROL
@@ -564,24 +583,6 @@ const ApplicationForm: React.FC = () => {
       </div>
     );
   };
-
-  const SectionWrapper: React.FC<
-    React.PropsWithChildren<{ title: string; subtitle?: string }>
-  > = ({ title, subtitle, children }) => (
-    <section className="mb-10">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-        {subtitle && (
-          <p className="text-xs text-gray-500 leading-relaxed">{subtitle}</p>
-        )}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 gap-4">
-        {children}
-      </div>
-    </section>
-  );
-
-  const Required: React.FC = () => <span className="text-red-500">*</span>;
 
   // -----------------------
   // SECTIONS
@@ -1668,13 +1669,13 @@ const ApplicationForm: React.FC = () => {
 
         {renderErrorSummary()}
 
-        {step === 1 && <StepOne />}
-        {step === 2 && <StepTwo />}
-        {step === 3 && <StepThree />}
-        {step === 4 && <StepFour />}
-        {step === 5 && <StepFive />}
-        {step === 6 && <StepSix />}
-        {step === 7 && <StepSeven />}
+        {step === 1 && StepOne()}
+        {step === 2 && StepTwo()}
+        {step === 3 && StepThree()}
+        {step === 4 && StepFour()}
+        {step === 5 && StepFive()}
+        {step === 6 && StepSix()}
+        {step === 7 && StepSeven()}
       </div>
     </div>
   );
