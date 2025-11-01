@@ -27,6 +27,10 @@ export async function POST(req: Request) {
       experienceScore,
     } = body;
 
+    if (!userId) {
+            return NextResponse.json({ success: false, message: "User not found with this userId!! First login" }, { status: 400 });
+        }
+
     const dataToSet = {
       experienceList,
       totalRelevantExperienceYears,

@@ -1,15 +1,17 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type Registration = {
+  userId: string;
   fullName: string;
   email: string;
   mobile: string;
   provisionalRegNo: string;
-  password: string;
+  passwordHash: string;
 };
 
 type BasicDetails = {
+  userId: string;
   fatherOrHusbandName: string;
   dob: string;
   gender: string;
@@ -21,6 +23,7 @@ type BasicDetails = {
 };
 
 type Education = {
+  userId: string;
   passed10Plus2: string;
   boardName: string;
   examType: string;
@@ -32,6 +35,7 @@ type Education = {
 };
 
 type ExperienceItem = {
+  userId: string;
   orgName: string;
   designation: string;
   natureOfWork: string;
@@ -43,6 +47,7 @@ type ExperienceItem = {
 };
 
 type Uploads = {
+  userId: string;
   photo: File | null;
   signature: File | null;
   marksheet10Plus2: File | null;
@@ -53,12 +58,14 @@ type Uploads = {
 };
 
 type Payment = {
+  userId: string;
   categoryForFee: string;
   calculatedFee: number;
   paymentMode: string;
 };
 
 type Declaration = {
+  userId: string;
   confirmTruth: boolean;
   confirmContactConsent: boolean;
 };
@@ -87,6 +94,9 @@ const ApplicationForm: React.FC = () => {
   // STEP CONTROL
   // -----------------------
   const [step, setStep] = useState<number>(1);
+  const [loading, setLoading] = useState(false);
+  const [load, setLoad] = useState(false);
+  const userId = "64b05344e7f1907f34c25151";
 
   // -----------------------
   // FORM STATE
@@ -94,15 +104,17 @@ const ApplicationForm: React.FC = () => {
 
   // Step 1: Registration Details
   const [registration, setRegistration] = useState<Registration>({
+    userId: userId,
     fullName: "",
     email: "",
     mobile: "",
     provisionalRegNo: "AUTO-GENERATED",
-    password: "",
+    passwordHash: "",
   });
 
   // Step 2: Basic Details
   const [basicDetails, setBasicDetails] = useState<BasicDetails>({
+    userId: userId,
     fatherOrHusbandName: "",
     dob: "",
     gender: "",
@@ -115,6 +127,7 @@ const ApplicationForm: React.FC = () => {
 
   // Step 3: Education
   const [education, setEducation] = useState<Education>({
+    userId: userId,
     passed10Plus2: "", // "yes" or "no"
     boardName: "",
     examType: "Intermediate (10+2)",
@@ -128,6 +141,7 @@ const ApplicationForm: React.FC = () => {
   // Step 4: Experience (list)
   const [experienceList, setExperienceList] = useState<ExperienceItem[]>([
     {
+      userId: userId,
       orgName: "",
       designation: "",
       natureOfWork: "",
@@ -141,6 +155,7 @@ const ApplicationForm: React.FC = () => {
 
   // Step 5: Uploads
   const [uploads, setUploads] = useState<Uploads>({
+    userId: userId,
     photo: null,
     signature: null,
     marksheet10Plus2: null,
@@ -152,6 +167,7 @@ const ApplicationForm: React.FC = () => {
 
   // Step 6: Payment
   const [payment, setPayment] = useState<Payment>({
+    userId: userId,
     categoryForFee: "", // derived from basicDetails.category
     calculatedFee: 0,
     paymentMode: "", // "online" | "offline"
@@ -159,6 +175,7 @@ const ApplicationForm: React.FC = () => {
 
   // Step 7: Declaration
   const [declaration, setDeclaration] = useState<Declaration>({
+    userId: userId,
     confirmTruth: false,
     confirmContactConsent: false,
   });
@@ -263,19 +280,36 @@ const ApplicationForm: React.FC = () => {
 
   // Add new experience row
   const handleAddExperienceRow = () => {
-    setExperienceList((prev) => [
-      ...prev,
-      {
-        orgName: "",
-        designation: "",
-        natureOfWork: "",
-        startDate: "",
-        endDate: "",
-        currentlyWorking: false,
-        durationText: "",
-        relevant: "",
-      },
-    ]);
+    if (experienceList.length > 0) {
+      setExperienceList((prev) => [
+        ...prev,
+        {
+          userId: userId,
+          orgName: "",
+          designation: "",
+          natureOfWork: "",
+          startDate: "",
+          endDate: "",
+          currentlyWorking: false,
+          durationText: "",
+          relevant: "",
+        },
+      ]);
+    } else {
+      setExperienceList((prev) => [
+        {
+          userId: userId,
+          orgName: "",
+          designation: "",
+          natureOfWork: "",
+          startDate: "",
+          endDate: "",
+          currentlyWorking: false,
+          durationText: "",
+          relevant: "",
+        },
+      ]);
+    }
   };
 
   // Calculate score preview:
@@ -290,27 +324,31 @@ const ApplicationForm: React.FC = () => {
     // We'll parse durationText for each row, sum years, and if months >=6 add +1.
     let totalYears = 0;
 
-    experienceList.forEach((item) => {
-      const match = item.durationText.match(
-        /(\d+)\s+year\(s\)\s+(\d+)\s+month\(s\)/
-      );
-      if (match) {
-        const years = parseInt(match[1], 10);
-        const months = parseInt(match[2], 10);
-        let rowYears = years;
-        if (months >= 6) {
-          rowYears += 1;
+    if (experienceList.length > 0) {
+      experienceList?.forEach((item) => {
+        const match = item.durationText.match(
+          /(\d+)\s+year\(s\)\s+(\d+)\s+month\(s\)/
+        );
+        if (match) {
+          const years = parseInt(match[1], 10);
+          const months = parseInt(match[2], 10);
+          let rowYears = years;
+          if (months >= 6) {
+            rowYears += 1;
+          }
+          // only count if relevant === "yes"
+          if (item.relevant === "yes") {
+            totalYears += rowYears;
+          }
         }
-        // only count if relevant === "yes"
-        if (item.relevant === "yes") {
-          totalYears += rowYears;
-        }
-      }
-    });
+      });
+    }
 
     const score = Math.min(25, totalYears * 5);
     return { totalYears, score };
   };
+
+  const { totalYears, score } = calculateExperienceScore();
 
   // File change handler for uploads
   const handleFileChange = (
@@ -377,7 +415,7 @@ const ApplicationForm: React.FC = () => {
       if (!registration.provisionalRegNo.trim()) {
         errors.push("Provisional Registration Number is required.");
       }
-      if (!registration.password.trim()) {
+      if (!registration.passwordHash.trim()) {
         errors.push("Password is required.");
       }
     }
@@ -426,10 +464,10 @@ const ApplicationForm: React.FC = () => {
       if (!education.yearOfPassing.trim()) {
         errors.push("Year of Passing is required.");
       }
-      if (!education.marksObtained.trim()) {
+      if (!education.marksObtained) {
         errors.push("Marks Obtained is required.");
       }
-      if (!education.maxMarks.trim()) {
+      if (!education.maxMarks) {
         errors.push("Maximum Marks is required.");
       }
     }
@@ -506,22 +544,108 @@ const ApplicationForm: React.FC = () => {
     return errors.length === 0;
   };
 
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoad(true);
+        const res = await fetch(`/api/application/me/${userId}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(err?.message || "Failed to fetch user! login first.");
+        }
+        const data = await res.json();
+        setRegistration((prev) => ({ ...prev, ...data.application }));
+        setBasicDetails((prev) => ({ ...prev, ...data.application }));
+        setEducation((prev) => ({ ...prev, ...data.application }));
+        setExperienceList((prev) => ({ ...prev, ...data.application }));
+        setUploads((prev) => ({ ...prev, ...data.application }));
+        setPayment((prev) => ({ ...prev, ...data.application }));
+        setDeclaration((prev) => ({ ...prev, ...data.application }));
+        setStep(data.application.currentStep);
+        setLoad(false);
+      } catch (error: any) {
+        setLoad(false);
+        alert("Failed to fetch user! login first.");
+      }
+    })();
+  }, []);
+
+  console.log("====================================");
+  console.log(experienceList);
+  console.log("====================================");
+
   // Validate and move forward
-  const handleNext = () => {
+  const handleNext = async () => {
     if (validateStep(step)) {
       // special: when moving past step 2, sync fee info
-      if (step === 2) {
-        const newFee = getFeeForCategory(
-          basicDetails.category || "",
-          basicDetails.gender || ""
-        );
-        setPayment((prev) => ({
-          ...prev,
-          categoryForFee: basicDetails.category,
-          calculatedFee: newFee,
-        }));
+      //   if (step === 2) {
+      //     const newFee = getFeeForCategory(
+      //       basicDetails.category || "",
+      //       basicDetails.gender || ""
+      //     );
+      //     setPayment((prev) => ({
+      //       ...prev,
+      //       categoryForFee: basicDetails.category,
+      //       calculatedFee: newFee,
+      //     }));
+      //   }
+
+      setLoading(true);
+
+      let data;
+
+      switch (step) {
+        case 1:
+          data = registration;
+          break;
+        case 2:
+          data = basicDetails;
+          break;
+        case 3:
+          data = education;
+          break;
+        case 4:
+          data = {
+            userId,
+            experienceList,
+            totalRelevantExperienceYears: totalYears,
+            experienceScore: score,
+          };
+          break;
+        case 5:
+          data = {};
+          break;
+        case 6:
+          data = payment;
+          break;
+        case 7:
+          data = declaration;
+          break;
+        default:
+          data = {};
+          break;
       }
-      setStep((prev) => prev + 1);
+
+      try {
+        const res = await fetch(`/api/application/step${step}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(err?.message || "Failed to submit application");
+        } else {
+          setStep((prev) => prev + 1);
+        }
+        setLoading(false);
+      } catch (error: any) {
+        setLoading(false);
+        alert("Failed to submit! try again.");
+      }
     }
   };
 
@@ -677,9 +801,12 @@ const ApplicationForm: React.FC = () => {
           <input
             type="password"
             className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            value={registration.password}
+            value={registration.passwordHash}
             onChange={(e) =>
-              setRegistration((prev) => ({ ...prev, password: e.target.value }))
+              setRegistration((prev) => ({
+                ...prev,
+                passwordHash: e.target.value,
+              }))
             }
             placeholder="Choose a strong password"
           />
@@ -700,7 +827,7 @@ const ApplicationForm: React.FC = () => {
           onClick={handleNext}
           className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 text-sm font-medium"
         >
-          Save & Next
+          {loading ? "Loading...." : "Save & Next"}
         </button>
       </div>
     </>
@@ -879,7 +1006,7 @@ const ApplicationForm: React.FC = () => {
           onClick={handleNext}
           className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 text-sm font-medium"
         >
-          Save & Next
+          {loading ? "Loading...." : "Save & Next"}
         </button>
       </div>
     </>
@@ -1049,7 +1176,7 @@ const ApplicationForm: React.FC = () => {
           onClick={handleNext}
           className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 text-sm font-medium"
         >
-          Save & Next
+          {loading ? "Loading...." : "Save & Next"}
         </button>
       </div>
     </>
@@ -1057,153 +1184,156 @@ const ApplicationForm: React.FC = () => {
 
   // STEP 4: Work Experience
   const StepFour = () => {
-    const { totalYears, score } = calculateExperienceScore();
-
     return (
       <>
         <SectionWrapper
           title="Step 4: Work Experience"
           subtitle="Experience will be verified. False information may lead to disqualification and legal action."
         >
-          {experienceList.map((exp, idx) => (
-            <div
-              key={idx}
-              className="md:col-span-2 border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-4"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Org Name */}
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700">
-                    Organization / Department Name
-                  </label>
-                  <input
-                    className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={exp.orgName}
-                    onChange={(e) =>
-                      handleExperienceChange(idx, "orgName", e.target.value)
-                    }
-                  />
-                </div>
-
-                {/* Designation */}
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700">
-                    Designation / Role
-                  </label>
-                  <input
-                    className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={exp.designation}
-                    onChange={(e) =>
-                      handleExperienceChange(idx, "designation", e.target.value)
-                    }
-                  />
-                </div>
-
-                {/* Nature of Work */}
-                <div className="flex flex-col md:col-span-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Nature of Work / Responsibilities
-                  </label>
-                  <textarea
-                    className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    rows={3}
-                    value={exp.natureOfWork}
-                    onChange={(e) =>
-                      handleExperienceChange(
-                        idx,
-                        "natureOfWork",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Describe duties related to land records / survey / revenue / govt field work"
-                  />
-                </div>
-
-                {/* Start Date */}
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700">
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={exp.startDate}
-                    onChange={(e) =>
-                      handleExperienceChange(idx, "startDate", e.target.value)
-                    }
-                  />
-                </div>
-
-                {/* End Date / Currently Working */}
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700">
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    className={`block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                      exp.currentlyWorking ? "bg-gray-100 text-gray-500" : ""
-                    }`}
-                    value={exp.currentlyWorking ? "" : exp.endDate}
-                    disabled={exp.currentlyWorking}
-                    onChange={(e) =>
-                      handleExperienceChange(idx, "endDate", e.target.value)
-                    }
-                  />
-                  <div className="flex items-center gap-2 text-xs text-gray-600 mt-2">
+          {experienceList.length > 0 &&
+            experienceList.map((exp, idx) => (
+              <div
+                key={idx}
+                className="md:col-span-2 border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-4"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Org Name */}
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700">
+                      Organization / Department Name
+                    </label>
                     <input
-                      type="checkbox"
-                      checked={exp.currentlyWorking}
+                      className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={exp.orgName}
+                      onChange={(e) =>
+                        handleExperienceChange(idx, "orgName", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* Designation */}
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700">
+                      Designation / Role
+                    </label>
+                    <input
+                      className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={exp.designation}
                       onChange={(e) =>
                         handleExperienceChange(
                           idx,
-                          "currentlyWorking",
-                          e.target.checked
+                          "designation",
+                          e.target.value
                         )
                       }
                     />
-                    <span>Currently Working</span>
+                  </div>
+
+                  {/* Nature of Work */}
+                  <div className="flex flex-col md:col-span-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Nature of Work / Responsibilities
+                    </label>
+                    <textarea
+                      className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      rows={3}
+                      value={exp.natureOfWork}
+                      onChange={(e) =>
+                        handleExperienceChange(
+                          idx,
+                          "natureOfWork",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Describe duties related to land records / survey / revenue / govt field work"
+                    />
+                  </div>
+
+                  {/* Start Date */}
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={exp.startDate}
+                      onChange={(e) =>
+                        handleExperienceChange(idx, "startDate", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* End Date / Currently Working */}
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      className={`block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                        exp.currentlyWorking ? "bg-gray-100 text-gray-500" : ""
+                      }`}
+                      value={exp.currentlyWorking ? "" : exp.endDate}
+                      disabled={exp.currentlyWorking}
+                      onChange={(e) =>
+                        handleExperienceChange(idx, "endDate", e.target.value)
+                      }
+                    />
+                    <div className="flex items-center gap-2 text-xs text-gray-600 mt-2">
+                      <input
+                        type="checkbox"
+                        checked={exp.currentlyWorking}
+                        onChange={(e) =>
+                          handleExperienceChange(
+                            idx,
+                            "currentlyWorking",
+                            e.target.checked
+                          )
+                        }
+                      />
+                      <span>Currently Working</span>
+                    </div>
+                  </div>
+
+                  {/* Duration */}
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700">
+                      Total Duration (auto)
+                    </label>
+                    <input
+                      className="block w-full border border-gray-300 bg-gray-100 text-gray-600 rounded-lg p-2 text-sm focus:outline-none"
+                      value={exp.durationText}
+                      readOnly
+                      placeholder="e.g. 2 year(s) 3 month(s)"
+                    />
+                    <p className="text-[11px] text-gray-500 mt-1">
+                      Only service ≥6 months in a calendar year counts as 1 full
+                      year. Less than 6 months is ignored.
+                    </p>
+                  </div>
+
+                  {/* Relevant? */}
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700">
+                      Relevant to land records / revenue / survey / land
+                      acquisition / govt field work? <Required />
+                    </label>
+                    <select
+                      className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={exp.relevant}
+                      onChange={(e) =>
+                        handleExperienceChange(idx, "relevant", e.target.value)
+                      }
+                    >
+                      <option value="">Select</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
                   </div>
                 </div>
-
-                {/* Duration */}
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700">
-                    Total Duration (auto)
-                  </label>
-                  <input
-                    className="block w-full border border-gray-300 bg-gray-100 text-gray-600 rounded-lg p-2 text-sm focus:outline-none"
-                    value={exp.durationText}
-                    readOnly
-                    placeholder="e.g. 2 year(s) 3 month(s)"
-                  />
-                  <p className="text-[11px] text-gray-500 mt-1">
-                    Only service ≥6 months in a calendar year counts as 1 full
-                    year. Less than 6 months is ignored.
-                  </p>
-                </div>
-
-                {/* Relevant? */}
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700">
-                    Relevant to land records / revenue / survey / land
-                    acquisition / govt field work? <Required />
-                  </label>
-                  <select
-                    className="block w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    value={exp.relevant}
-                    onChange={(e) =>
-                      handleExperienceChange(idx, "relevant", e.target.value)
-                    }
-                  >
-                    <option value="">Select</option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
           <div className="md:col-span-2">
             <button
@@ -1245,7 +1375,7 @@ const ApplicationForm: React.FC = () => {
             onClick={handleNext}
             className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 text-sm font-medium"
           >
-            Save & Next
+            {loading ? "Loading...." : "Save & Next"}
           </button>
         </div>
       </>
@@ -1420,7 +1550,7 @@ const ApplicationForm: React.FC = () => {
           onClick={handleNext}
           className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 text-sm font-medium"
         >
-          Save & Next
+          {loading ? "Loading...." : "Save & Next"}
         </button>
       </div>
     </>
@@ -1524,7 +1654,7 @@ const ApplicationForm: React.FC = () => {
           onClick={handleNext}
           className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 text-sm font-medium"
         >
-          Save & Next
+          {loading ? "Loading...." : "Save & Next"}
         </button>
       </div>
     </>
@@ -1640,10 +1770,6 @@ const ApplicationForm: React.FC = () => {
     </>
   );
 
-  console.log("====================================");
-  console.log(registration);
-  console.log("====================================");
-
   // -----------------------
   // PAGE WRAPPER
   // -----------------------
@@ -1651,31 +1777,46 @@ const ApplicationForm: React.FC = () => {
   return (
     <div className="bg-gray-100 min-h-screen py-10 px-4">
       <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-10">
-        {/* Step indicator */}
-        <div className="flex flex-wrap items-center justify-between mb-8">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-800">
-              Bihar Revenue & Land Reforms Dept. – Amin Application
-            </h1>
-            <p className="text-xs text-gray-500">
-              Step {step} of 7 • Online Application & CBT Recruitment
-            </p>
+        {load ? (
+          <div
+            style={{
+              height: "80vh",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <h3 style={{ textAlign: "center" }}>Loading....</h3>
           </div>
-          <div className="text-xs text-gray-500">
-            All fields marked <span className="text-red-500">*</span> are
-            mandatory.
-          </div>
-        </div>
+        ) : (
+          <>
+            {/* Step indicator */}
+            <div className="flex flex-wrap items-center justify-between mb-8">
+              <div>
+                <h1 className="text-xl font-semibold text-gray-800">
+                  Bihar Revenue & Land Reforms Dept. – Amin Application
+                </h1>
+                <p className="text-xs text-gray-500">
+                  Step {step} of 7 • Online Application & CBT Recruitment
+                </p>
+              </div>
+              <div className="text-xs text-gray-500">
+                All fields marked <span className="text-red-500">*</span> are
+                mandatory.
+              </div>
+            </div>
 
-        {renderErrorSummary()}
+            {renderErrorSummary()}
 
-        {step === 1 && StepOne()}
-        {step === 2 && StepTwo()}
-        {step === 3 && StepThree()}
-        {step === 4 && StepFour()}
-        {step === 5 && StepFive()}
-        {step === 6 && StepSix()}
-        {step === 7 && StepSeven()}
+            {step === 1 && StepOne()}
+            {step === 2 && StepTwo()}
+            {step === 3 && StepThree()}
+            {step === 4 && StepFour()}
+            {step === 5 && StepFive()}
+            {step === 6 && StepSix()}
+            {step === 7 && StepSeven()}
+          </>
+        )}
       </div>
     </div>
   );

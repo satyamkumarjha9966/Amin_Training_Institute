@@ -22,6 +22,10 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { userId, paymentCategoryForFee, calculatedFee, paymentMode } = body;
 
+    if (!userId) {
+            return NextResponse.json({ success: false, message: "User not found with this userId!! First login" }, { status: 400 });
+        }
+
     const dataToSet = {
       paymentCategoryForFee,
       calculatedFee,

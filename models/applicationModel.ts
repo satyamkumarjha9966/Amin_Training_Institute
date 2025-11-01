@@ -57,7 +57,7 @@ const ApplicationSchema = new Schema(
     },
 
     dob: {
-      type: Date,
+      type: String,
       required: true,
     },
 
@@ -165,8 +165,8 @@ const ApplicationSchema = new Schema(
         orgName: { type: String, trim: true },
         designation: { type: String, trim: true },
         natureOfWork: { type: String, trim: true },
-        startDate: { type: Date },
-        endDate: { type: Date },
+        startDate: { type: String },
+        endDate: { type: String },
         currentlyWorking: { type: Boolean, default: false },
 
         // Calculated label like "2 year(s) 3 month(s)"
