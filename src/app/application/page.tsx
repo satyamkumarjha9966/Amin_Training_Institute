@@ -170,7 +170,7 @@ const ApplicationForm: React.FC = () => {
   const [payment, setPayment] = useState<Payment>({
     userId: userId,
     categoryForFee: "", // derived from basicDetails.category
-    calculatedFee: 0,
+    calculatedFee: 200,
     paymentMode: "", // "online" | "offline"
   });
 
@@ -373,25 +373,25 @@ const ApplicationForm: React.FC = () => {
   };
 
   // Fee calculation from category
-  const getFeeForCategory = (cat: string, genderGuess?: string) => {
-    // Based on ad:
-    // General / EBC / BC / UR male: ₹200
-    // General / EBC / BC / UR female: ₹100
-    // SC / ST / Divyang all genders: ₹100
-    // We'll approximate "UR" with General.
-    const lower = cat.toLowerCase();
-    if (
-      lower.includes("sc") ||
-      lower.includes("st") ||
-      lower.includes("divyang")
-    ) {
-      return 100;
-    }
-    if (genderGuess && genderGuess.toLowerCase() === "female") {
-      return 100;
-    }
-    return 200;
-  };
+  // const getFeeForCategory = (cat: string, genderGuess?: string) => {
+  //   // Based on ad:
+  //   // General / EBC / BC / UR male: ₹200
+  //   // General / EBC / BC / UR female: ₹100
+  //   // SC / ST / Divyang all genders: ₹100
+  //   // We'll approximate "UR" with General.
+  //   const lower = cat.toLowerCase();
+  //   if (
+  //     lower.includes("sc") ||
+  //     lower.includes("st") ||
+  //     lower.includes("divyang")
+  //   ) {
+  //     return 100;
+  //   }
+  //   if (genderGuess && genderGuess.toLowerCase() === "female") {
+  //     return 100;
+  //   }
+  //   return 200;
+  // };
 
   // -----------------------
   // VALIDATION
@@ -558,9 +558,37 @@ const ApplicationForm: React.FC = () => {
           alert(err?.message || "Failed to fetch user! login first.");
         }
         const data = await res.json();
-        setRegistration((prev) => ({ ...prev, ...data.application }));
-        setBasicDetails((prev) => ({ ...prev, ...data.application }));
-        setEducation((prev) => ({ ...prev, ...data.application }));
+        setRegistration({
+          userId: userId,
+          fullName: data.application.fullName || "",
+          email: data.application.email || "",
+          mobile: data.application.mobile || "",
+          provisionalRegNo:
+            data.application.provisionalRegNo || "AUTO-GENERATED",
+          passwordHash: data.application.passwordHash || "",
+        });
+        setBasicDetails({
+          userId: userId,
+          fatherOrHusbandName: data.application.fatherOrHusbandName || "",
+          dob: data.application.dob || "",
+          gender: data.application.gender || "",
+          category: data.application.category || "",
+          domicileState: data.application.domicileState || "",
+          permanentAddress: data.application.permanentAddress || "",
+          correspondenceAddress: data.application.correspondenceAddress || "",
+          sameAddress: data.application.sameAddress || false,
+        });
+        setEducation({
+          userId: userId,
+          passed10Plus2: data.application.passed10Plus2 || "",
+          boardName: data.application.boardName || "",
+          examType: data.application.examType || "Intermediate (10+2)",
+          rollNumber: data.application.rollNumber || "",
+          yearOfPassing: data.application.yearOfPassing || "",
+          marksObtained: data.application.marksObtained || "",
+          maxMarks: data.application.maxMarks || "",
+          percentage: data.application.percentage || "",
+        });
         setExperienceList(data.application.experienceList ?? []);
         setUploads({
           userId: userId,
@@ -573,8 +601,18 @@ const ApplicationForm: React.FC = () => {
           experienceProofs: data.application.experienceProofFiles || [],
           otherDocument: data.application.otherDocumentFile || null,
         });
-        setPayment((prev) => ({ ...prev, ...data.application }));
-        setDeclaration((prev) => ({ ...prev, ...data.application }));
+        setPayment({
+          userId: userId,
+          categoryForFee: data.application.categoryForFee || "",
+          calculatedFee: data.application.calculatedFee || 200,
+          paymentMode: data.application.paymentMode || "",
+        });
+        setDeclaration({
+          userId: userId,
+          confirmTruth: data.application.confirmTruth || false,
+          confirmContactConsent:
+            data.application.confirmContactConsent || false,
+        });
         setStep(data.application.currentStep);
         setLoad(false);
       } catch (error: any) {
@@ -681,44 +719,62 @@ const ApplicationForm: React.FC = () => {
     }
   };
 
-  console.log(uploads);
-
   const handleBack = () => {
     setStep((prev) => prev - 1);
   };
 
   // Final submit
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateStep(7)) {
-      const finalData = {
-        registration,
-        basicDetails,
-        education,
-        experienceList,
-        uploads: {
-          // We can't serialize File objects nicely here, but we include names
-          photo: uploads.photo ? uploads.photo.name : null,
-          signature: uploads.signature ? uploads.signature.name : null,
-          marksheet10Plus2: uploads.marksheet10Plus2
-            ? uploads.marksheet10Plus2.name
-            : null,
-          categoryCertificate: uploads.categoryCertificate
-            ? uploads.categoryCertificate.name
-            : null,
-          disabilityCertificate: uploads.disabilityCertificate
-            ? uploads.disabilityCertificate.name
-            : null,
-          experienceProofs: uploads.experienceProofs.map((f) => f.name),
-          otherDocument: uploads.otherDocument
-            ? uploads.otherDocument.name
-            : null,
-        },
-        payment,
-        declaration,
-      };
+      // const finalData = {
+      //   registration,
+      //   basicDetails,
+      //   education,
+      //   experienceList,
+      //   uploads: {
+      //     // We can't serialize File objects nicely here, but we include names
+      //     photo: uploads.photo ? uploads.photo.name : null,
+      //     signature: uploads.signature ? uploads.signature.name : null,
+      //     marksheet10Plus2: uploads.marksheet10Plus2
+      //       ? uploads.marksheet10Plus2.name
+      //       : null,
+      //     categoryCertificate: uploads.categoryCertificate
+      //       ? uploads.categoryCertificate.name
+      //       : null,
+      //     disabilityCertificate: uploads.disabilityCertificate
+      //       ? uploads.disabilityCertificate.name
+      //       : null,
+      //     experienceProofs: uploads.experienceProofs.map((f) => f.name),
+      //     otherDocument: uploads.otherDocument
+      //       ? uploads.otherDocument.name
+      //       : null,
+      //   },
+      //   payment,
+      //   declaration,
+      // };
 
-      console.log("FINAL SUBMISSION DATA:", finalData);
-      alert("Form submitted");
+      // console.log("FINAL SUBMISSION DATA:", finalData);
+      // alert("Form submitted");
+
+      try {
+        setLoading(true);
+        let response = await fetch(`/api/application/step7`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(declaration),
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err?.message || "Failed to submit application");
+        }
+      } catch (error: any) {
+        alert(error.message || "Failed to submit! try again.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -1615,7 +1671,7 @@ const ApplicationForm: React.FC = () => {
         subtitle="Exam fee is non-refundable. Keep your receipt safely."
       >
         {/* Category For Fee */}
-        <div className="flex flex-col">
+        {/* <div className="flex flex-col">
           <label className="text-sm font-medium text-gray-700">
             Candidate Category (read-only)
           </label>
@@ -1624,12 +1680,13 @@ const ApplicationForm: React.FC = () => {
             value={payment.categoryForFee}
             readOnly
           />
-        </div>
+        </div> */}
 
         {/* Calculated Fee */}
         <div className="flex flex-col">
           <label className="text-sm font-medium text-gray-700">
-            Calculated Exam Fee Amount (₹)
+            {/* Calculated Exam Fee Amount (₹) */}
+            Exam Fee Amount (₹)
           </label>
           <input
             className="block w-full border border-gray-300 bg-gray-100 text-gray-600 rounded-lg p-2 text-sm focus:outline-none"
@@ -1660,7 +1717,7 @@ const ApplicationForm: React.FC = () => {
               <span>Online (Card / NetBanking)</span>
             </label>
 
-            <label className="flex items-center gap-2">
+            {/* <label className="flex items-center gap-2">
               <input
                 type="radio"
                 name="paymentMode"
@@ -1674,14 +1731,14 @@ const ApplicationForm: React.FC = () => {
                 }
               />
               <span>Offline (Challan / NEFT)</span>
-            </label>
+            </label> */}
           </div>
 
           <div className="bg-blue-50 border border-blue-300 text-blue-700 rounded-lg p-3 text-xs mt-4 space-y-2">
-            <div>
+            {/* <div>
               <strong>Offline Challan:</strong> Download challan, deposit
               cash/NEFT in bank before last date, and keep the receipt.
-            </div>
+            </div> */}
             <div>
               <strong>Online Payment:</strong> You will be redirected to
               card/debit/netbanking gateway and must pay the processing charges.
@@ -1775,7 +1832,7 @@ const ApplicationForm: React.FC = () => {
         {/* Preview & Submit */}
         <div className="flex flex-col md:col-span-2 gap-3 mt-4">
           <div className="flex flex-col sm:flex-row gap-3">
-            <button
+            {/* <button
               type="button"
               className="bg-gray-200 text-gray-800 rounded-lg px-4 py-2 hover:bg-gray-300 text-sm font-medium w-full sm:w-auto"
               onClick={() => {
@@ -1792,14 +1849,16 @@ const ApplicationForm: React.FC = () => {
               }}
             >
               Preview Application
-            </button>
+            </button> */}
 
             <button
               type="button"
               className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 text-sm font-medium w-full sm:w-auto"
               onClick={handleSubmit}
             >
-              Final Submit & Generate Application PDF
+              {loading
+                ? "Submitting..."
+                : "Final Submit & Generate Application PDF"}
             </button>
           </div>
 

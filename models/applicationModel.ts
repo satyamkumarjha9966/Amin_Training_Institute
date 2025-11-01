@@ -248,7 +248,7 @@ const ApplicationSchema = new Schema(
     calculatedFee: {
       // 200 or 100
       type: Number,
-      default: 0,
+      default: 200,
     },
 
     paymentMode: {
