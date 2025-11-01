@@ -1,4 +1,5 @@
 "use client";
+import { ApplicationAlreadySubmitted } from "@/components/utils/ApplicationAlreadySubmitted";
 import { FileRender } from "@/components/utils/FileRender";
 import React, { useEffect, useState } from "react";
 
@@ -97,6 +98,7 @@ const ApplicationForm: React.FC = () => {
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
+  const [alreadyFormSubmitted, setAlreadyFormSubmitted] = useState(false);
   const userId = "64b05344e7f1907f34c25151";
 
   // -----------------------
@@ -555,66 +557,76 @@ const ApplicationForm: React.FC = () => {
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          alert(err?.message || "Failed to fetch user! login first.");
+          alert(
+            err?.message || "Failed to fetch user! login first or refresh page."
+          );
+        } else {
+          const data = await res.json();
+          if (
+            data.application.confirmTruth &&
+            data.application.confirmContactConsent
+          ) {
+            setAlreadyFormSubmitted(true);
+          }
+          setRegistration({
+            userId: userId,
+            fullName: data.application.fullName || "",
+            email: data.application.email || "",
+            mobile: data.application.mobile || "",
+            provisionalRegNo:
+              data.application.provisionalRegNo || "AUTO-GENERATED",
+            passwordHash: data.application.passwordHash || "",
+          });
+          setBasicDetails({
+            userId: userId,
+            fatherOrHusbandName: data.application.fatherOrHusbandName || "",
+            dob: data.application.dob || "",
+            gender: data.application.gender || "",
+            category: data.application.category || "",
+            domicileState: data.application.domicileState || "",
+            permanentAddress: data.application.permanentAddress || "",
+            correspondenceAddress: data.application.correspondenceAddress || "",
+            sameAddress: data.application.sameAddress || false,
+          });
+          setEducation({
+            userId: userId,
+            passed10Plus2: data.application.passed10Plus2 || "",
+            boardName: data.application.boardName || "",
+            examType: data.application.examType || "Intermediate (10+2)",
+            rollNumber: data.application.rollNumber || "",
+            yearOfPassing: data.application.yearOfPassing || "",
+            marksObtained: data.application.marksObtained || "",
+            maxMarks: data.application.maxMarks || "",
+            percentage: data.application.percentage || "",
+          });
+          setExperienceList(data.application.experienceList ?? []);
+          setUploads({
+            userId: userId,
+            photo: data.application.photoFile || null,
+            signature: data.application.signatureFile || null,
+            marksheet10Plus2: data.application.marksheet10Plus2File || null,
+            categoryCertificate:
+              data.application.categoryCertificateFile || null,
+            disabilityCertificate:
+              data.application.disabilityCertificateFile || null,
+            experienceProofs: data.application.experienceProofFiles || [],
+            otherDocument: data.application.otherDocumentFile || null,
+          });
+          setPayment({
+            userId: userId,
+            categoryForFee: data.application.categoryForFee || "",
+            calculatedFee: data.application.calculatedFee || 200,
+            paymentMode: data.application.paymentMode || "",
+          });
+          setDeclaration({
+            userId: userId,
+            confirmTruth: data.application.confirmTruth || false,
+            confirmContactConsent:
+              data.application.confirmContactConsent || false,
+          });
+          setStep(data.application.currentStep);
+          setLoad(false);
         }
-        const data = await res.json();
-        setRegistration({
-          userId: userId,
-          fullName: data.application.fullName || "",
-          email: data.application.email || "",
-          mobile: data.application.mobile || "",
-          provisionalRegNo:
-            data.application.provisionalRegNo || "AUTO-GENERATED",
-          passwordHash: data.application.passwordHash || "",
-        });
-        setBasicDetails({
-          userId: userId,
-          fatherOrHusbandName: data.application.fatherOrHusbandName || "",
-          dob: data.application.dob || "",
-          gender: data.application.gender || "",
-          category: data.application.category || "",
-          domicileState: data.application.domicileState || "",
-          permanentAddress: data.application.permanentAddress || "",
-          correspondenceAddress: data.application.correspondenceAddress || "",
-          sameAddress: data.application.sameAddress || false,
-        });
-        setEducation({
-          userId: userId,
-          passed10Plus2: data.application.passed10Plus2 || "",
-          boardName: data.application.boardName || "",
-          examType: data.application.examType || "Intermediate (10+2)",
-          rollNumber: data.application.rollNumber || "",
-          yearOfPassing: data.application.yearOfPassing || "",
-          marksObtained: data.application.marksObtained || "",
-          maxMarks: data.application.maxMarks || "",
-          percentage: data.application.percentage || "",
-        });
-        setExperienceList(data.application.experienceList ?? []);
-        setUploads({
-          userId: userId,
-          photo: data.application.photoFile || null,
-          signature: data.application.signatureFile || null,
-          marksheet10Plus2: data.application.marksheet10Plus2File || null,
-          categoryCertificate: data.application.categoryCertificateFile || null,
-          disabilityCertificate:
-            data.application.disabilityCertificateFile || null,
-          experienceProofs: data.application.experienceProofFiles || [],
-          otherDocument: data.application.otherDocumentFile || null,
-        });
-        setPayment({
-          userId: userId,
-          categoryForFee: data.application.categoryForFee || "",
-          calculatedFee: data.application.calculatedFee || 200,
-          paymentMode: data.application.paymentMode || "",
-        });
-        setDeclaration({
-          userId: userId,
-          confirmTruth: data.application.confirmTruth || false,
-          confirmContactConsent:
-            data.application.confirmContactConsent || false,
-        });
-        setStep(data.application.currentStep);
-        setLoad(false);
       } catch (error: any) {
         setLoad(false);
         alert("Failed to fetch user! login first.");
@@ -1900,31 +1912,37 @@ const ApplicationForm: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Step indicator */}
-            <div className="flex flex-wrap items-center justify-between mb-8">
-              <div>
-                <h1 className="text-xl font-semibold text-gray-800">
-                  Bihar Revenue & Land Reforms Dept. – Amin Application
-                </h1>
-                <p className="text-xs text-gray-500">
-                  Step {step} of 7 • Online Application & CBT Recruitment
-                </p>
-              </div>
-              <div className="text-xs text-gray-500">
-                All fields marked <span className="text-red-500">*</span> are
-                mandatory.
-              </div>
-            </div>
+            {alreadyFormSubmitted ? (
+              <ApplicationAlreadySubmitted />
+            ) : (
+              <>
+                {/* Step indicator */}
+                <div className="flex flex-wrap items-center justify-between mb-8">
+                  <div>
+                    <h1 className="text-xl font-semibold text-gray-800">
+                      Bihar Revenue & Land Reforms Dept. – Amin Application
+                    </h1>
+                    <p className="text-xs text-gray-500">
+                      Step {step} of 7 • Online Application & CBT Recruitment
+                    </p>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    All fields marked <span className="text-red-500">*</span>{" "}
+                    are mandatory.
+                  </div>
+                </div>
 
-            {renderErrorSummary()}
+                {renderErrorSummary()}
 
-            {step === 1 && StepOne()}
-            {step === 2 && StepTwo()}
-            {step === 3 && StepThree()}
-            {step === 4 && StepFour()}
-            {step === 5 && StepFive()}
-            {step === 6 && StepSix()}
-            {step === 7 && StepSeven()}
+                {step === 1 && StepOne()}
+                {step === 2 && StepTwo()}
+                {step === 3 && StepThree()}
+                {step === 4 && StepFour()}
+                {step === 5 && StepFive()}
+                {step === 6 && StepSix()}
+                {step === 7 && StepSeven()}
+              </>
+            )}
           </>
         )}
       </div>
