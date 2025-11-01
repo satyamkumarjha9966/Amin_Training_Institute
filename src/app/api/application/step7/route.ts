@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     await connectDB();
 
     const body = await req.json();
-    const { userId, confirmTruth, confirmContactConsent } = body;
+    const { userId, confirmTruth, confirmContactConsent, isFinalSubmitted, finalSubmittedAt } = body;
 
     if (!userId) {
             return NextResponse.json({ success: false, message: "User not found with this userId!! First login" }, { status: 400 });
@@ -29,6 +29,8 @@ export async function POST(req: Request) {
     const dataToSet = {
       confirmTruth,
       confirmContactConsent,
+      isFinalSubmitted,
+      finalSubmittedAt,
       currentStep: 7,
     };
 

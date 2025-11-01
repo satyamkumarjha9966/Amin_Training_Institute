@@ -2,6 +2,7 @@
 import { ApplicationAlreadySubmitted } from "@/components/utils/ApplicationAlreadySubmitted";
 import { FileRender } from "@/components/utils/FileRender";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Registration = {
   userId: string;
@@ -99,6 +100,7 @@ const ApplicationForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
   const [alreadyFormSubmitted, setAlreadyFormSubmitted] = useState(false);
+  const router = useRouter();
   const userId = "64b05344e7f1907f34c25151";
 
   // -----------------------
@@ -562,10 +564,7 @@ const ApplicationForm: React.FC = () => {
           );
         } else {
           const data = await res.json();
-          if (
-            data.application.confirmTruth &&
-            data.application.confirmContactConsent
-          ) {
+          if (data.application.isFinalSubmitted) {
             setAlreadyFormSubmitted(true);
           }
           setRegistration({
@@ -770,17 +769,25 @@ const ApplicationForm: React.FC = () => {
 
       try {
         setLoading(true);
+
         let response = await fetch(`/api/application/step7`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(declaration),
+          body: JSON.stringify({
+            ...declaration,
+            isFinalSubmitted: true,
+            finalSubmittedAt: new Date(),
+          }),
         });
 
         if (!response.ok) {
           const err = await response.json().catch(() => ({}));
           throw new Error(err?.message || "Failed to submit application");
+        } else {
+          // Client-side navigation to avoid full page reload
+          router.push("/enroll");
         }
       } catch (error: any) {
         alert(error.message || "Failed to submit! try again.");
