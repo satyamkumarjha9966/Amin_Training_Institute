@@ -560,7 +560,7 @@ const ApplicationForm: React.FC = () => {
         setRegistration((prev) => ({ ...prev, ...data.application }));
         setBasicDetails((prev) => ({ ...prev, ...data.application }));
         setEducation((prev) => ({ ...prev, ...data.application }));
-        setExperienceList((prev) => ({ ...prev, ...data.application }));
+        setExperienceList(data.application.experienceList ?? []);
         setUploads((prev) => ({ ...prev, ...data.application }));
         setPayment((prev) => ({ ...prev, ...data.application }));
         setDeclaration((prev) => ({ ...prev, ...data.application }));
@@ -572,10 +572,6 @@ const ApplicationForm: React.FC = () => {
       }
     })();
   }, []);
-
-  console.log("====================================");
-  console.log(experienceList);
-  console.log("====================================");
 
   // Validate and move forward
   const handleNext = async () => {
