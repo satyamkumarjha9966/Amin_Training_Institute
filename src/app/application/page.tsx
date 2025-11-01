@@ -3,6 +3,7 @@ import { ApplicationAlreadySubmitted } from "@/components/utils/ApplicationAlrea
 import { FileRender } from "@/components/utils/FileRender";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import PaymentButtonPage from "../paymentButton/page";
 
 type Registration = {
   userId: string;
@@ -176,7 +177,7 @@ const ApplicationForm: React.FC = () => {
     userId: userId,
     categoryForFee: "", // derived from basicDetails.category
     calculatedFee: 200,
-    paymentMode: "", // "online" | "offline"
+    paymentMode: "online", // "online" | "offline"
     paymentStatus: "pending",
   });
 
@@ -618,6 +619,7 @@ const ApplicationForm: React.FC = () => {
             categoryForFee: data.application.categoryForFee || "",
             calculatedFee: data.application.calculatedFee || 200,
             paymentMode: data.application.paymentMode || "",
+            paymentStatus: data.application.paymentStatus || "pending",
           });
           setDeclaration({
             userId: userId,
@@ -1718,27 +1720,33 @@ const ApplicationForm: React.FC = () => {
 
         {/* Payment Mode */}
         <div className="flex flex-col md:col-span-2">
-          {/* <label className="text-sm font-medium text-gray-700">
-            Choose Payment Mode <Required />
-          </label> */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-2 text-sm">
-            {/* <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="paymentMode"
-                value="online"
-                checked={payment.paymentMode === "online"}
-                onChange={(e) =>
-                  setPayment((prev) => ({
-                    ...prev,
-                    paymentMode: e.target.value,
-                  }))
-                }
-              />
-              <span>Online (Card / NetBanking)</span>
-            </label> */}
+          {payment.paymentStatus === "completed" ? (
+            <div className="mt-4 text-green-600 font-semibold">
+              <strong>-- Payment Completed --</strong>
+            </div>
+          ) : (
+            <>
+              <label className="text-sm font-medium text-gray-700">
+                Choose Payment Mode <Required />
+              </label>
+              <div className="flex flex-col sm:flex-row gap-4 mt-2 text-sm">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="paymentMode"
+                    value="online"
+                    checked={payment.paymentMode === "online"}
+                    onChange={(e) =>
+                      setPayment((prev) => ({
+                        ...prev,
+                        paymentMode: e.target.value,
+                      }))
+                    }
+                  />
+                  <span>Online (Card / NetBanking)</span>
+                </label>
 
-            {/* <label className="flex items-center gap-2">
+                {/* <label className="flex items-center gap-2">
               <input
                 type="radio"
                 name="paymentMode"
@@ -1753,22 +1761,26 @@ const ApplicationForm: React.FC = () => {
               />
               <span>Offline (Challan / NEFT)</span>
             </label> */}
-          </div>
+              </div>
 
-          {/* <div className="bg-blue-50 border border-blue-300 text-blue-700 rounded-lg p-3 text-xs mt-4 space-y-2">
-            <div>
+              <div className="bg-blue-50 border border-blue-300 text-blue-700 rounded-lg p-3 text-xs mt-4 space-y-2">
+                {/* <div>
               <strong>Offline Challan:</strong> Download challan, deposit
               cash/NEFT in bank before last date, and keep the receipt.
-            </div>
-            <div>
-              <strong>Online Payment:</strong> You will be redirected to
-              card/debit/netbanking gateway and must pay the processing charges.
-            </div>
-            <div className="text-red-600 font-medium">
-              Exam fee is non-refundable. Payment receipt must be kept safely.
-              Delayed settlement or non-updated payment will not be entertained.
-            </div>
-          </div> */}
+            </div> */}
+                <div>
+                  <strong>Online Payment:</strong> You will be redirected to
+                  card/debit/netbanking gateway and must pay the processing
+                  charges.
+                </div>
+                <div className="text-red-600 font-medium">
+                  Exam fee is non-refundable. Payment receipt must be kept
+                  safely. Delayed settlement or non-updated payment will not be
+                  entertained.
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </SectionWrapper>
 
@@ -1779,12 +1791,16 @@ const ApplicationForm: React.FC = () => {
         >
           Back
         </button>
-        <button
-          onClick={handleNext}
-          className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 text-sm font-medium"
-        >
-          {loading ? "Loading...." : "Save & Next"}
-        </button>
+        {payment.paymentStatus == "pending" ? (
+          <PaymentButtonPage userId={userId} />
+        ) : (
+          <button
+            onClick={handleNext}
+            className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 text-sm font-medium"
+          >
+            {loading ? "Loading...." : "Save & Next"}
+          </button>
+        )}
       </div>
     </>
   );

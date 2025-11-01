@@ -10,7 +10,11 @@ declare global {
   }
 }
 
-export default function PaymentButtonPage() {
+interface PaymentButtonPageProps {
+  userId: string;
+}
+
+export default function PaymentButtonPage({ userId }: PaymentButtonPageProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
@@ -54,17 +58,17 @@ export default function PaymentButtonPage() {
           const verifyRes = await fetch("/api/payment/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(response),
+            body: JSON.stringify({ ...response, userId }),
           });
 
           const verifyData = await verifyRes.json();
           alert(verifyData.message);
 
-          // if (verifyRes.ok) {
-          //   router.push(`/payment/payment-success/${verifyData.razorpay_order_id}`)
-          // } else {
-          //   router.push(`/payment/payment-failed/${verifyData.razorpay_order_id}`)
-          // }
+          if (verifyRes.ok) {
+            window.location.reload();
+          } else {
+            router.push(`/application`);
+          }
         },
         prefill: {
           name: "Shivam Jha",
@@ -85,15 +89,15 @@ export default function PaymentButtonPage() {
   };
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen gap-5">
-      <h1 className="text-2xl font-bold">💳 Razorpay Pay Now Button</h1>
+    <main className="flex flex-col items-center justify-center gap-5">
+      {/* <h1 className="text-2xl font-bold">💳 Razorpay Pay Now Button</h1> */}
 
       <button
         onClick={handlePayment}
         disabled={loading}
         className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
       >
-        {loading ? "Processing..." : "Pay ₹1"}
+        {loading ? "Processing..." : "Pay ₹200"}
       </button>
 
       {/* ✅ Proper way to load Razorpay script */}

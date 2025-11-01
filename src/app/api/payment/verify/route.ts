@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { connectDB } from "@/lib/db";
 import Payment from "../../../../../models/paymentModel";
 import Razorpay from "razorpay";
+import Application from "../../../../../models/applicationModel";
 
 export async function POST(req: Request) {
   try {
@@ -10,10 +11,12 @@ export async function POST(req: Request) {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
+      userId,
     }: {
       razorpay_order_id: string;
       razorpay_payment_id: string;
       razorpay_signature: string;
+      userId: string;
     } = await req.json();
 
     await connectDB();
@@ -45,6 +48,11 @@ export async function POST(req: Request) {
     });
 
     if (isValid) {
+      await Application.findOneAndUpdate(
+        { userId },
+        { $set: { paymentStatus: "completed" } },
+        { new: true }
+      );
       return NextResponse.json({
         success: true,
         message: "Payment verified and stored ✅",
