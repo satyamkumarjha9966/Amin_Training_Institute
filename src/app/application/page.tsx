@@ -1,4 +1,5 @@
 "use client";
+import { FileRender } from "@/components/utils/FileRender";
 import React, { useEffect, useState } from "react";
 
 type Registration = {
@@ -561,7 +562,17 @@ const ApplicationForm: React.FC = () => {
         setBasicDetails((prev) => ({ ...prev, ...data.application }));
         setEducation((prev) => ({ ...prev, ...data.application }));
         setExperienceList(data.application.experienceList ?? []);
-        setUploads((prev) => ({ ...prev, ...data.application }));
+        setUploads({
+          userId: userId,
+          photo: data.application.photoFile || null,
+          signature: data.application.signatureFile || null,
+          marksheet10Plus2: data.application.marksheet10Plus2File || null,
+          categoryCertificate: data.application.categoryCertificateFile || null,
+          disabilityCertificate:
+            data.application.disabilityCertificateFile || null,
+          experienceProofs: data.application.experienceProofFiles || [],
+          otherDocument: data.application.otherDocumentFile || null,
+        });
         setPayment((prev) => ({ ...prev, ...data.application }));
         setDeclaration((prev) => ({ ...prev, ...data.application }));
         setStep(data.application.currentStep);
@@ -573,77 +584,104 @@ const ApplicationForm: React.FC = () => {
     })();
   }, []);
 
+  const uploadsReady = () => {
+    const formData = new FormData();
+
+    formData.append("userId", userId);
+
+    // Single file uploads
+    if (uploads.photo) formData.append("photo", uploads.photo);
+    if (uploads.signature) formData.append("signature", uploads.signature);
+    if (uploads.marksheet10Plus2)
+      formData.append("marksheet10Plus2", uploads.marksheet10Plus2);
+    if (uploads.categoryCertificate)
+      formData.append("categoryCertificate", uploads.categoryCertificate);
+    if (uploads.disabilityCertificate)
+      formData.append("disabilityCertificate", uploads.disabilityCertificate);
+    if (uploads.otherDocument)
+      formData.append("otherDocument", uploads.otherDocument);
+
+    // Multiple files (experienceProofs)
+    uploads.experienceProofs.forEach((file, index) => {
+      formData.append(`experienceProofs`, file);
+    });
+
+    // Add userId to formData
+    formData.append("userId", userId);
+
+    return formData;
+  };
+
   // Validate and move forward
   const handleNext = async () => {
     if (validateStep(step)) {
-      // special: when moving past step 2, sync fee info
-      //   if (step === 2) {
-      //     const newFee = getFeeForCategory(
-      //       basicDetails.category || "",
-      //       basicDetails.gender || ""
-      //     );
-      //     setPayment((prev) => ({
-      //       ...prev,
-      //       categoryForFee: basicDetails.category,
-      //       calculatedFee: newFee,
-      //     }));
-      //   }
-
       setLoading(true);
 
-      let data;
-
-      switch (step) {
-        case 1:
-          data = registration;
-          break;
-        case 2:
-          data = basicDetails;
-          break;
-        case 3:
-          data = education;
-          break;
-        case 4:
-          data = {
-            userId,
-            experienceList,
-            totalRelevantExperienceYears: totalYears,
-            experienceScore: score,
-          };
-          break;
-        case 5:
-          data = {};
-          break;
-        case 6:
-          data = payment;
-          break;
-        case 7:
-          data = declaration;
-          break;
-        default:
-          data = {};
-          break;
-      }
-
       try {
-        const res = await fetch(`/api/application/step${step}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          alert(err?.message || "Failed to submit application");
+        let response;
+
+        // Handle step 5 separately as it uses FormData
+        if (step === 5) {
+          response = await fetch(`/api/application/step${step}`, {
+            method: "POST",
+            body: uploadsReady(), // FormData automatically sets correct Content-Type
+          });
         } else {
-          setStep((prev) => prev + 1);
+          // All other steps use JSON
+          let jsonData;
+
+          switch (step) {
+            case 1:
+              jsonData = registration;
+              break;
+            case 2:
+              jsonData = basicDetails;
+              break;
+            case 3:
+              jsonData = education;
+              break;
+            case 4:
+              jsonData = {
+                userId,
+                experienceList,
+                totalRelevantExperienceYears: totalYears,
+                experienceScore: score,
+              };
+              break;
+            case 6:
+              jsonData = payment;
+              break;
+            case 7:
+              jsonData = declaration;
+              break;
+            default:
+              jsonData = {};
+          }
+
+          response = await fetch(`/api/application/step${step}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(jsonData),
+          });
         }
-        setLoading(false);
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err?.message || "Failed to submit application");
+        }
+
+        setStep((prev) => prev + 1);
       } catch (error: any) {
+        alert(error.message || "Failed to submit! try again.");
+      } finally {
         setLoading(false);
-        alert("Failed to submit! try again.");
       }
     }
   };
+
+  console.log(uploads);
 
   const handleBack = () => {
     setStep((prev) => prev - 1);
@@ -1399,6 +1437,7 @@ const ApplicationForm: React.FC = () => {
           <p className="text-[11px] text-gray-500 mt-1">
             {uploads.photo ? uploads.photo.name : "No file chosen"} (Max 2MB)
           </p>
+          {uploads.photo && <FileRender file={uploads.photo} />}
         </div>
 
         {/* Signature */}
@@ -1418,6 +1457,7 @@ const ApplicationForm: React.FC = () => {
             {uploads.signature ? uploads.signature.name : "No file chosen"} (Max
             2MB)
           </p>
+          {uploads.signature && <FileRender file={uploads.signature} />}
         </div>
 
         {/* Marksheet 10+2 */}
@@ -1439,6 +1479,9 @@ const ApplicationForm: React.FC = () => {
               : "No file chosen"}{" "}
             (PDF/JPG, Max 2MB)
           </p>
+          {uploads.marksheet10Plus2 && (
+            <FileRender file={uploads.marksheet10Plus2} />
+          )}
         </div>
 
         {/* Category Certificate */}
@@ -1465,6 +1508,9 @@ const ApplicationForm: React.FC = () => {
               : "No file chosen"}{" "}
             (PDF/JPG, Max 2MB)
           </p>
+          {uploads.categoryCertificate && (
+            <FileRender file={uploads.categoryCertificate} />
+          )}
         </div>
 
         {/* Disability Cert */}
@@ -1489,6 +1535,31 @@ const ApplicationForm: React.FC = () => {
               : "No file chosen"}{" "}
             (PDF/JPG, Max 2MB)
           </p>
+          {uploads.disabilityCertificate && (
+            <FileRender file={uploads.disabilityCertificate} />
+          )}
+        </div>
+
+        {/* Other Doc */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-gray-700">
+            Any Other Supporting Document (optional)
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            className="block w-full text-sm"
+            onChange={(e) =>
+              handleFileChange("otherDocument", e.target.files, false)
+            }
+          />
+          <p className="text-[11px] text-gray-500 mt-1">
+            {uploads.otherDocument
+              ? uploads.otherDocument.name
+              : "No file chosen"}{" "}
+            (PDF/JPG, Max 2MB)
+          </p>
+          {uploads.otherDocument && <FileRender file={uploads.otherDocument} />}
         </div>
 
         {/* Experience Proofs */}
@@ -1511,27 +1582,11 @@ const ApplicationForm: React.FC = () => {
               : "No files selected"}{" "}
             (PDF/JPG, Max 2MB each)
           </p>
-        </div>
-
-        {/* Other Doc */}
-        <div className="flex flex-col">
-          <label className="text-sm font-medium text-gray-700">
-            Any Other Supporting Document (optional)
-          </label>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            className="block w-full text-sm"
-            onChange={(e) =>
-              handleFileChange("otherDocument", e.target.files, false)
-            }
-          />
-          <p className="text-[11px] text-gray-500 mt-1">
-            {uploads.otherDocument
-              ? uploads.otherDocument.name
-              : "No file chosen"}{" "}
-            (PDF/JPG, Max 2MB)
-          </p>
+          <div style={{ display: "flex", gap: "11px" }}>
+            {uploads.experienceProofs.map(
+              (file, index) => file && <FileRender file={file} />
+            )}
+          </div>
         </div>
       </SectionWrapper>
 
