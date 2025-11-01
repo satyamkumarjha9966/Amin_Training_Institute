@@ -75,10 +75,16 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* CTA Buttons */}
+            {/* CTA & Auth Buttons */}
             <div className="hidden md:flex items-center gap-3">
               <Button variant="outline" size="sm">
                 Call Now
+              </Button>
+              <Button variant="outline" size="sm">
+                <Link href="/signin">Sign in</Link>
+              </Button>
+              <Button variant="outline" size="sm">
+                <Link href="/signup">Sign up</Link>
               </Button>
               <Button
                 variant="cta"
@@ -117,17 +123,28 @@ const Header = () => {
                   {item.name}
                 </Link>
               ))}
-              <div className="flex gap-3 mt-4">
-                <Button variant="outline" size="sm" className="flex-1">
-                  Call Now
-                </Button>
-                <Button
-                  variant="cta"
-                  size="sm"
-                  className="flex-1 bg-[#00ACAC] hover:bg-[#008A8A] hover:text-white"
-                >
-                  <Link href="/enroll">Apply Now</Link>
-                </Button>
+              <div className="flex flex-col gap-3 mt-4">
+                <div className="flex gap-3">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    Call Now
+                  </Button>
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Link href="/signin">Sign in</Link>
+                  </Button>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Link href="/signup">Sign up</Link>
+                  </Button>
+                  <Button
+                    variant="cta"
+                    size="sm"
+                    className="flex-1 bg-[#00ACAC] hover:bg-[#008A8A] hover:text-white"
+                  >
+                    <Link href="/enroll">Apply Now</Link>
+                  </Button>
+                </div>
               </div>
             </nav>
           </div>

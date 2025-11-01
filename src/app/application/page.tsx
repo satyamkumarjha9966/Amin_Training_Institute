@@ -65,6 +65,7 @@ type Payment = {
   categoryForFee: string;
   calculatedFee: number;
   paymentMode: string;
+  paymentStatus: string;
 };
 
 type Declaration = {
@@ -176,6 +177,7 @@ const ApplicationForm: React.FC = () => {
     categoryForFee: "", // derived from basicDetails.category
     calculatedFee: 200,
     paymentMode: "", // "online" | "offline"
+    paymentStatus: "pending",
   });
 
   // Step 7: Declaration
@@ -1716,11 +1718,11 @@ const ApplicationForm: React.FC = () => {
 
         {/* Payment Mode */}
         <div className="flex flex-col md:col-span-2">
-          <label className="text-sm font-medium text-gray-700">
+          {/* <label className="text-sm font-medium text-gray-700">
             Choose Payment Mode <Required />
-          </label>
+          </label> */}
           <div className="flex flex-col sm:flex-row gap-4 mt-2 text-sm">
-            <label className="flex items-center gap-2">
+            {/* <label className="flex items-center gap-2">
               <input
                 type="radio"
                 name="paymentMode"
@@ -1734,7 +1736,7 @@ const ApplicationForm: React.FC = () => {
                 }
               />
               <span>Online (Card / NetBanking)</span>
-            </label>
+            </label> */}
 
             {/* <label className="flex items-center gap-2">
               <input
@@ -1753,11 +1755,11 @@ const ApplicationForm: React.FC = () => {
             </label> */}
           </div>
 
-          <div className="bg-blue-50 border border-blue-300 text-blue-700 rounded-lg p-3 text-xs mt-4 space-y-2">
-            {/* <div>
+          {/* <div className="bg-blue-50 border border-blue-300 text-blue-700 rounded-lg p-3 text-xs mt-4 space-y-2">
+            <div>
               <strong>Offline Challan:</strong> Download challan, deposit
               cash/NEFT in bank before last date, and keep the receipt.
-            </div> */}
+            </div>
             <div>
               <strong>Online Payment:</strong> You will be redirected to
               card/debit/netbanking gateway and must pay the processing charges.
@@ -1766,7 +1768,7 @@ const ApplicationForm: React.FC = () => {
               Exam fee is non-refundable. Payment receipt must be kept safely.
               Delayed settlement or non-updated payment will not be entertained.
             </div>
-          </div>
+          </div> */}
         </div>
       </SectionWrapper>
 

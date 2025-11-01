@@ -257,6 +257,12 @@ const ApplicationSchema = new Schema(
       default: "",
     },
 
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "completed", "failed", ""],
+      default: "pending",
+    },
+
     // You could also add transactionId, challanNo, etc. later if needed
     // transactionId: { type: String, trim: true },
 
