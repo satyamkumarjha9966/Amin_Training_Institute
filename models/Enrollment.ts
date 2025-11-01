@@ -12,6 +12,9 @@ const FileRefSchema = new Schema(
 
 const EnrollmentSchema = new Schema(
   {
+    userId: { type: String, required: true, unique: true },
+
+    currentStep: { type: Number, default: 0 },
     // Personal
     fullName: { type: String, required: true },
     dateOfBirth: { type: String, required: true },

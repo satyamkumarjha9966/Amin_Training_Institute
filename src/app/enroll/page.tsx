@@ -48,9 +48,11 @@ import {
   Share2,
   Check,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const enrollmentSchema = z.object({
   // Personal Details
+  userId: z.string().optional(), // will be set in backend
   fullName: z.string().min(2, "Full name is required"),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
   gender: z.enum(["male", "female", "other"], {
@@ -136,7 +138,9 @@ const steps = [
 ];
 
 const Enroll = () => {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{
     [key: string]: File | null;
@@ -147,6 +151,20 @@ const Enroll = () => {
     marksheet: null,
     paymentReceipt: null,
   });
+
+  // show server-known file names/urls for preview when fetching existing data
+  const [uploadedFileNames, setUploadedFileNames] = useState<{
+    [key: string]: string | null;
+  }>({
+    aadhaarCard: null,
+    photograph: null,
+    signature: null,
+    marksheet: null,
+    paymentReceipt: null,
+  });
+
+  // Use a sample userId like the application form does. Replace with auth when available.
+  const userId = "64b05344e7f1907f34c25153";
 
   // SEO setup
   useEffect(() => {
@@ -178,6 +196,39 @@ const Enroll = () => {
       link.href = `${window.location.origin}/enroll`;
       document.head.appendChild(link);
     }
+  }, []);
+
+  // Prefill from server if user has saved enrollment
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/enroll/me/${userId}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!res.ok) {
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        if (data?.enrollment) {
+          // merge into form values (keys must match schema)
+          form.reset(data.enrollment);
+
+          // populate step
+          if (data.enrollment.currentStep) {
+            setCurrentStep(data.enrollment.currentStep);
+          }
+
+          // if server returns file names/urls, show them as previews
+          setUploadedFileNames((prev) => ({ ...prev, ...data.enrollment }));
+        }
+        setLoading(false);
+      } catch (e) {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   const form = useForm<EnrollmentFormData>({
@@ -274,7 +325,17 @@ const Enroll = () => {
     const isValid = await form.trigger(fields);
 
     if (isValid) {
-      nextStep();
+      // save this step to server (per-step save)
+      try {
+           setLoading(true);
+           const values = form.getValues();
+           await saveStep(currentStep, values);
+           nextStep();
+      } catch (err: any) {
+        alert(err?.message || "Failed to save step. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -298,10 +359,130 @@ const Enroll = () => {
     return fd;
   }
 
+  // Save a single step to the server. Sends FormData if files present for that step,
+  // otherwise sends JSON. Includes userId.
+  async function saveStep(step: number, allValues: EnrollmentFormData) {
+    let payload: any = { userId };
+
+    switch (step) {
+      case 1:
+        payload = {
+          userId,
+          ...pick(allValues, [
+            "fullName",
+            "dateOfBirth",
+            "gender",
+            "mobileNumber",
+            "email",
+            "parentName",
+            "permanentAddress",
+            "city",
+            "state",
+            "pinCode",
+          ]),
+        };
+        break;
+      case 2:
+        payload = {
+          userId,
+          ...pick(allValues, ["aadhaarNumber", "panNumber"]),
+        };
+        break;
+      case 3:
+        payload = {
+          userId,
+          ...pick(allValues, [
+            "highestQualification",
+            "institutionName",
+            "yearOfPassing",
+          ]),
+        };
+        break;
+      case 4:
+        payload = {
+          userId,
+          ...pick(allValues, [
+            "selectedCourse",
+            "learningMode",
+            "batchTime",
+            "hearAboutUs",
+          ]),
+        };
+        break;
+      case 5:
+        payload = {
+          userId,
+          ...pick(allValues, ["paymentMode", "transactionId"]),
+        };
+        break;
+      case 6:
+        payload = {
+          userId,
+          ...pick(allValues, ["infoDeclaration", "termsAccepted"]),
+        };
+        break;
+      default:
+        payload = { userId };
+    }
+
+    // Determine if there are files for this step
+    const filesForStep: string[] =
+      step === 2
+        ? ["aadhaarCard", "photograph", "signature"]
+        : step === 3
+        ? ["marksheet"]
+        : step === 5
+        ? ["paymentReceipt"]
+        : [];
+
+    const hasFile = filesForStep.some((k) => !!uploadedFiles[k]);
+
+    if (hasFile) {
+      // build FormData with only relevant payload keys + all files
+      const fd = new FormData();
+      Object.entries(payload).forEach(([k, v]) =>
+        fd.append(k, String(v ?? ""))
+      );
+      filesForStep.forEach((k) => {
+        const f = uploadedFiles[k];
+        if (f) fd.append(k, f, f.name);
+      });
+
+      const res = await fetch(`/api/enroll/step${step}`, {
+        method: "POST",
+        body: fd,
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(txt || "Failed to save step");
+      }
+    } else {
+      const res = await fetch(`/api/enroll/step${step}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || "Failed to save step");
+      }
+    }
+  }
+
+  // small utility to pick keys from an object
+  function pick<T extends Record<string, any>>(obj: T, keys: string[]) {
+    const out: Partial<T> = {};
+    keys.forEach((k) => {
+      if (k in obj) out[k as keyof T] = obj[k as keyof T];
+    });
+    return out;
+  }
+
   // in your component Enroll:
   const onSubmit = async (data: EnrollmentFormData) => {
     try {
       const fd = buildFormData(data, uploadedFiles);
+      fd.append("userId", userId);
 
       const res = await fetch("/api/enroll", {
         method: "POST",
@@ -315,10 +496,9 @@ const Enroll = () => {
 
       setShowSuccessModal(true);
       toast({
-        title: "Application Submitted Successfully!",
+        title: "Enrollment Submitted Successfully!",
         description: "We will contact you shortly with further details.",
       });
-      alert("Aapplied successfully!!");
 
       // optionally reset
       form.reset();
@@ -338,6 +518,40 @@ const Enroll = () => {
       });
       alert("Error in applying!!");
     }
+  };
+
+  const onSubmitFinal = async (allValues: EnrollmentFormData) => {
+    let payload: any = { userId };
+    payload = {
+      userId,
+      ...pick(allValues, ["infoDeclaration", "termsAccepted"]),
+    };
+    const res = await fetch(`/api/enroll/step6`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || "Failed to save step");
+      } else {
+        setShowSuccessModal(true);
+       // optionally reset
+       form.reset();
+       setUploadedFiles({
+         aadhaarCard: null,
+         photograph: null,
+         signature: null,
+         marksheet: null,
+         paymentReceipt: null,
+       });
+       router.push("/");
+       toast({
+         title: "Enrollment Submitted Successfully!",
+         description: "We will contact you shortly with further details.",
+       }); 
+      }
   };
 
   // const onSubmit = async (data: EnrollmentFormData) => {
@@ -404,9 +618,9 @@ const Enroll = () => {
         <label htmlFor={fieldName} className="cursor-pointer">
           <Upload className="mx-auto h-10 w-10 text-[#B99671] mb-3" />
           <p className="text-base text-foreground font-medium">
-            {uploadedFiles[fieldName]
-              ? uploadedFiles[fieldName]?.name
-              : "Click to upload or drag and drop"}
+            {uploadedFiles[fieldName]?.name ||
+              uploadedFileNames[fieldName] ||
+              "Click to upload or drag and drop"}
           </p>
           <p className="text-sm text-muted-foreground mt-2">
             JPG, PNG or PDF (Max 5MB)
@@ -1312,7 +1526,8 @@ const Enroll = () => {
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8"> */}
+            <form onSubmit={form.handleSubmit(onSubmitFinal)} className="space-y-8">
               {/* Step Content */}
               <div className="transition-all duration-500 ease-in-out">
                 {renderStepContent()}
